@@ -1,22 +1,19 @@
 import express from "express";
 import cors from "cors";
-
-// import userRoutes from "./routes/userRoutes.js";
-// import jobRoutes from "./routes/jobRoutes.js";
-// import resourceRoutes from "./routes/resourceRoutes.js";
-import connectDB from "./config/database.js";
-
+import userRoutes from "./routes/userRoutes.js";
+import { connectDB } from "./config/database.js";
+import { corsMiddleware } from "./middlewares/corsMiddleware.js";
 const app = express();
 
 // Middlewares
-app.use(cors());
-app.use(express.json());
+app.use(corsMiddleware);
+app.use(express.json()); // no need for body-parser
 
 // Connect MongoDB
-connectDB();
+await connectDB(); // top-level await
 
 // Routes
-// app.use("/api/users", userRoutes);
+app.use("/api", userRoutes);
 // app.use("/api/jobs", jobRoutes);
 // app.use("/api/resources", resourceRoutes);
 
