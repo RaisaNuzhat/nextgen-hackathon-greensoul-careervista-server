@@ -18,6 +18,10 @@ export const addUser = async (user) => {
   // Insert new user
   const newUser = {
     ...user,
+    skill: [],
+    job_experience:null,
+    cv_url:null,
+    projects:[],
     timestamp: Date.now(),
   };
   console.log("from userModel: ",newUser);
@@ -28,4 +32,22 @@ export const addUser = async (user) => {
 export const getAllUsers = async () => {
   const userCollection = getUserCollection();
   return await userCollection.find().toArray();
+};
+
+export const updateUser = async (email, userData) => {
+  const userCollection = getUserCollection();
+
+  // // clean up undefined fields if any
+  // Object.keys(userData).forEach(
+  //   (key) => userData[key] === undefined && delete userData[key]
+  // );
+console.log(userData,email)
+  const result = await userCollection.findOneAndUpdate(
+    { email },
+    { $set: userData },
+    { returnDocument: "after" } // returns the updated document
+  );
+  console.log(result);
+
+  return result;
 };

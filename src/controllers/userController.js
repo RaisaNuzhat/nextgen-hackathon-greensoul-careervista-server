@@ -1,5 +1,5 @@
-// Remove the duplicate import - keep only one
-import { findUserByEmail, addUser, getAllUsers } from "../models/userModel.js";
+// controllers/userController.js
+import { findUserByEmail, addUser, getAllUsers, updateUser } from "../models/userModel.js";
 
 // Add or update user
 export const createUser = async (req, res) => {
@@ -11,7 +11,6 @@ export const createUser = async (req, res) => {
     if (isExist) {
       return res.send({ message: "User already exists", insertedId: null });
     }
-
     const result = await addUser(user);
     console.log(user);
     res.send(result);
@@ -43,3 +42,30 @@ export const getUserByEmailController = async (req, res) => {
     res.status(500).send({ message: "Server Error", error });
   }
 };
+
+export const updateUserData = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const userData = req.body;
+    // console.log(userData)
+
+    if (!email) {
+      return res.status(400).send({ message: "Email is required" });
+    }
+
+    const updatedUser = await updateUser(email, userData);
+
+    if (!updatedUser) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.send({
+      message: "User profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).send({ message: "Server Error", error });
+  }
+};
+
