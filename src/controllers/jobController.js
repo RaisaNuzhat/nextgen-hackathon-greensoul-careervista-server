@@ -15,63 +15,71 @@ export const seedJobs = async (req, res) => {
     }
 
     const jobs = [
-      {
-        title: "Frontend Developer (React)",
-        company: "TechNova Solutions",
-        location: "Remote",
-        mode: "Remote",
-        experience: "1-2 years",
-        skills: ["React", "JavaScript", "CSS", "REST API"],
-        experienceLevel: "Intermediate",
-        jobType: "Full-time",
-        salary: "Negotiable",
-        details:
-          "Develop and maintain React-based front-end applications with a focus on performance and user experience.",
-        recruiterEmail: "hr@technovasolutions.com",
-      },
-      {
-        title: "UI/UX Design Intern",
-        company: "Creative Minds Studio",
-        location: "Dhaka, Bangladesh",
-        mode: "Onsite",
-        experience: "0-1 year",
-        skills: ["Figma", "Adobe XD", "Design Principles"],
-        experienceLevel: "Beginner",
-        jobType: "Internship",
-        salary: "8000 BDT/month",
-        details:
-          "Assist in creating visually appealing and user-friendly design prototypes and mockups.",
-        recruiterEmail: "jobs@creativeminds.com",
-      },
-      {
-        title: "Backend Developer (Node.js)",
-        company: "Cloudify Ltd.",
-        location: "Remote",
-        mode: "Remote",
-        experience: "2+ years",
-        skills: ["Node.js", "Express", "MongoDB", "JWT"],
-        experienceLevel: "Intermediate",
-        jobType: "Full-time",
-        salary: "Negotiable",
-        details:
-          "Develop backend APIs, ensure security and scalability for production-grade systems.",
-        recruiterEmail: "careers@cloudify.com",
-      },
-      {
-        title: "Freelance Data Analyst",
-        company: "DataWorks",
-        location: "Remote",
-        mode: "Remote",
-        experience: "3+ years",
-        skills: ["Python", "Pandas", "Power BI"],
-        experienceLevel: "Advanced",
-        jobType: "Freelance",
-        salary: "$30/hour",
-        details:
-          "Analyze datasets and build interactive dashboards to support business decisions.",
-        recruiterEmail: "contact@dataworks.com",
-      },
-    ];
+  {
+    title: "Frontend Developer (React)",
+    company: "TechNova Solutions",
+    location: "Remote",
+    mode: "Remote",
+    experience: "1-2 years",
+    skills: ["React", "JavaScript", "CSS", "REST API"],
+    experienceLevel: "Intermediate",
+    jobType: "Full-time",
+    salary: "Negotiable",
+    details:
+      "Develop and maintain React-based front-end applications with a focus on performance and user experience.",
+    recruiterEmail: "hr@technovasolutions.com",
+    image:
+      "https://img.freepik.com/free-vector/front-end-programming-illustration_23-2148937877.jpg",
+  },
+  {
+    title: "UI/UX Design Intern",
+    company: "Creative Minds Studio",
+    location: "Dhaka, Bangladesh",
+    mode: "Onsite",
+    experience: "0-1 year",
+    skills: ["Figma", "Adobe XD", "Design Principles"],
+    experienceLevel: "Beginner",
+    jobType: "Internship",
+    salary: "8000 BDT/month",
+    details:
+      "Assist in creating visually appealing and user-friendly design prototypes and mockups.",
+    recruiterEmail: "jobs@creativeminds.com",
+    image:
+      "https://img.freepik.com/free-vector/ui-ux-design-concept-illustration_114360-2391.jpg",
+  },
+  {
+    title: "Backend Developer (Node.js)",
+    company: "Cloudify Ltd.",
+    location: "Remote",
+    mode: "Remote",
+    experience: "2+ years",
+    skills: ["Node.js", "Express", "MongoDB", "JWT"],
+    experienceLevel: "Intermediate",
+    jobType: "Full-time",
+    salary: "Negotiable",
+    details:
+      "Develop backend APIs, ensure security and scalability for production-grade systems.",
+    recruiterEmail: "careers@cloudify.com",
+    image:
+      "https://img.freepik.com/free-vector/backend-developer-programming-illustration_23-2148937885.jpg", 
+  },
+  {
+    title: "Freelance Data Analyst",
+    company: "DataWorks",
+    location: "Remote",
+    mode: "Remote",
+    experience: "3+ years",
+    skills: ["Python", "Pandas", "Power BI"],
+    experienceLevel: "Advanced",
+    jobType: "Freelance",
+    salary: "$30/hour",
+    details:
+      "Analyze datasets and build interactive dashboards to support business decisions.",
+    recruiterEmail: "contact@dataworks.com",
+    image:
+      "https://img.freepik.com/free-vector/data-analytics-illustration_23-2148937862.jpg", 
+  },
+];
 
     const result = await jobCollection().insertMany(jobs);
     res.status(201).json({ 

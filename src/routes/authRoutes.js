@@ -1,12 +1,12 @@
-const express = require('express');
-const { sign } = require('jsonwebtoken');
+import express from 'express';
+import jwt from 'jsonwebtoken';
+
 const router = express.Router();
 
-// POST /jwt - Generate JWT token
 router.post('/jwt', async (req, res) => {
   try {
     const user = req.body;
-    const token = sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: "24h",
     });
     res.send({ token });
@@ -15,4 +15,4 @@ router.post('/jwt', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
