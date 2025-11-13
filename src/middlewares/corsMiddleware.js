@@ -3,8 +3,7 @@ import cors from "cors";
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://th-assignment-a87d3.web.app",
-  "https://th-assignment-a87d3.firebaseapp.com",
+  
 ];
 
 const corsOptions = {
