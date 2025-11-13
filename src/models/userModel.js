@@ -12,17 +12,17 @@ export const findUserByEmail = async (email) => {
   return await userCollection.findOne({ email });
 };
 
-export const addOrUpdateUser = async (user) => {
+export const addUser = async (user) => {
   const userCollection = getUserCollection();
   const query = { email: user.email };
-  const options = { upsert: true };
-  const updateDoc = {
-    $set: {
-      ...user,
-      timestamp: Date.now(),
-    },
+  // Insert new user
+  const newUser = {
+    ...user,
+    timestamp: Date.now(),
   };
-  return await userCollection.updateOne(query, updateDoc, options);
+  console.log("from userModel: ",newUser);
+  
+  return await userCollection.insertOne(newUser);
 };
 
 export const getAllUsers = async () => {
