@@ -1,7 +1,7 @@
-const { verify } = require('jsonwebtoken');
-const { getDB } = require('../config/database');
+import jwt from 'jsonwebtoken';
+import { getDB } from '../config/database.js';
 
-const verifyToken = (req, res, next) => {
+export const verifyToken = (req, res, next) => {
   console.log("Authorization header:", req.headers.authorization);
   
   if (!req.headers.authorization) {
@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
   
   const token = req.headers.authorization.split(" ")[1];
   
-  verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).send({ message: "Access Denied" });
     }
@@ -19,7 +19,7 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-const verifyAdmin = async (req, res, next) => {
+export const verifyAdmin = async (req, res, next) => {
   try {
     const email = req.decoded.email;
     const db = getDB();
@@ -37,5 +37,3 @@ const verifyAdmin = async (req, res, next) => {
     return res.status(500).send({ message: "Internal Server Error" });
   }
 };
-
-module.exports = { verifyToken, verifyAdmin };

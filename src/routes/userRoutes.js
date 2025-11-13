@@ -1,4 +1,4 @@
-// routes/userRoutes.js
+
 import express from "express";
 import { createUser, getUsers, getUserByEmailController, updateUserData } from "../controllers/userController.js";
 import { verifyAdmin, verifyToken } from "../middlewares/authMiddleware.js";

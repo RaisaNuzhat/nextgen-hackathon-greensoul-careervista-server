@@ -1,21 +1,28 @@
-// config/database.js
 import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-let client;
 let db;
+let client;
 
 export const connectDB = async () => {
   try {
-    client = new MongoClient(process.env.DATABASE_URL); // options removed
+    const uri = process.env.DATABASE_URL;
+    
+    // Check if DATABASE_URL exists
+    if (!uri) {
+      throw new Error("❌ DATABASE_URL is not defined in .env file");
+    }
+    
+    console.log("🔄 Connecting to MongoDB...");
+    client = new MongoClient(uri);
     await client.connect();
+    
+    // Ping to verify connection
+    await client.db("admin").command({ ping: 1 });
+    
     db = client.db("careervista");
-    console.log("MongoDB Connected");
-    return db;
+    console.log("✅ MongoDB connected successfully to database: careervista");
   } catch (error) {
-    console.error("MongoDB connection error:", error);
+    console.error("❌ MongoDB connection error:", error.message);
     process.exit(1);
   }
 };
@@ -26,3 +33,5 @@ export const getDB = () => {
   }
   return db;
 };
+
+export { client };

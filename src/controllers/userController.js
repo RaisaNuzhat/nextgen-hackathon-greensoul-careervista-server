@@ -9,7 +9,7 @@ export const createUser = async (req, res) => {
     // check if user already exists
     const isExist = await findUserByEmail(user.email);
     if (isExist) {
-      return res.send({ message: "User already exists", insertedId: null }); // return existing user
+      return res.send({ message: "User already exists", insertedId: null });
     }
     const result = await addUser(user);
     console.log(user);
@@ -68,3 +68,4 @@ export const updateUserData = async (req, res) => {
     res.status(500).send({ message: "Server Error", error });
   }
 };
+
