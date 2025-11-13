@@ -1,4 +1,4 @@
-// routes/userRoutes.js
+
 import express from "express";
 import { createOrUpdateUser, getUsers, getUserByEmailController } from "../controllers/userController.js";
 

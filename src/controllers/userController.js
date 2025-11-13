@@ -1,4 +1,4 @@
-// controllers/userController.js
+
 import { findUserByEmail, addOrUpdateUser, getAllUsers } from "../models/userModel.js";
 
 // Add or update user
@@ -9,7 +9,7 @@ export const createOrUpdateUser = async (req, res) => {
     // check if user already exists
     const isExist = await findUserByEmail(user.email);
     if (isExist) {
-      return res.send(isExist); // return existing user
+      return res.send(isExist); 
     }
 
     const result = await addOrUpdateUser(user);

@@ -6,7 +6,7 @@ export const getUserCollection = () => {
   return db.collection("users");
 };
 
-// Optional: reusable CRUD functions
+
 export const findUserByEmail = async (email) => {
   const userCollection = getUserCollection();
   return await userCollection.findOne({ email });
