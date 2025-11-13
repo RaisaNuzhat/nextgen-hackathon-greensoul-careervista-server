@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+
+import { findUserByEmail, addOrUpdateUser, getAllUsers } from "../models/userModel.js";
+=======
 // controllers/userController.js
 import { findUserByEmail, addUser, getAllUsers } from "../models/userModel.js";
+>>>>>>> main
 
 // Add or update user
 export const createUser = async (req, res) => {
@@ -9,7 +14,11 @@ export const createUser = async (req, res) => {
     // check if user already exists
     const isExist = await findUserByEmail(user.email);
     if (isExist) {
+<<<<<<< HEAD
+      return res.send(isExist); 
+=======
       return res.send({ message: "User already exists", insertedId: null }); // return existing user
+>>>>>>> main
     }
 
     const result = await addUser(user);
