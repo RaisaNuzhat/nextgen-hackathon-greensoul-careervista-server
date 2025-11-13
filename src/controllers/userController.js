@@ -1,4 +1,4 @@
-// controllers/userController.js
+// Remove the duplicate import - keep only one
 import { findUserByEmail, addUser, getAllUsers } from "../models/userModel.js";
 
 // Add or update user
@@ -9,7 +9,7 @@ export const createUser = async (req, res) => {
     // check if user already exists
     const isExist = await findUserByEmail(user.email);
     if (isExist) {
-      return res.send({ message: "User already exists", insertedId: null }); // return existing user
+      return res.send({ message: "User already exists", insertedId: null });
     }
 
     const result = await addUser(user);
