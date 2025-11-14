@@ -1,6 +1,8 @@
 import { getDB } from "../config/database.js";
 import { generateRoadMap, getRoadMap } from "../models/roadmapModel.js";
 
+
+
 export const getRoadmap = async (req, res) => {
   try {
     const email = req.params.email;
@@ -13,13 +15,14 @@ export const getRoadmap = async (req, res) => {
   }
 };
 
+
 async function queryHuggingFace(prompt) {
   const response = await fetch(
     "https://router.huggingface.co/v1/chat/completions",
     {
       method: "POST",
       headers: {
-        Authorization: Bearer ${process.env.CAREERVISTA_TOKEN},
+        Authorization: `Bearer ${process.env.CAREERVISTA_TOKEN}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -36,9 +39,7 @@ async function queryHuggingFace(prompt) {
   const data = await response.json();
   console.log(data?.choices[0]?.message?.content);
   if (data.error) throw new Error(data.error);
-  return (
-    data?.choices[0]?.message?.content || "No response received from model."
-  );
+  return data?.choices[0]?.message?.content || "No response received from model.";
 }
 export const generateRoadmap = async (req, res) => {
   try {
@@ -109,11 +110,11 @@ IMPORTANT: Return your response ONLY as valid JSON in this exact format (no mark
     try {
       // Remove markdown code blocks if present
       let cleanResponse = aiResponse.trim();
-      if (cleanResponse.startsWith("json")) {
+      if (cleanResponse.startsWith("```json")) {
         cleanResponse = cleanResponse
-          .replace(/json\n?/g, "")
-          .replace(/\n?/g, "");
-      } else if (cleanResponse.startsWith("")) {
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "");
+      } else if (cleanResponse.startsWith("```")) {
         cleanResponse = cleanResponse.replace(/```\n?/g, "");
       }
 
@@ -127,11 +128,11 @@ IMPORTANT: Return your response ONLY as valid JSON in this exact format (no mark
         phases: [
           {
             title: "Foundation Phase",
-            duration: Month 1-${Math.ceil(timeframe / 3)},
+            duration: `Month 1-${Math.ceil(timeframe / 3)}`,
             topics:
               currentSkills.length > 0
                 ? [
-                    Build on: ${currentSkills.join(", ")},
+                    `Build on: ${currentSkills.join(", ")}`,
                     "Core fundamentals",
                     "Industry best practices",
                   ]
@@ -155,11 +156,12 @@ IMPORTANT: Return your response ONLY as valid JSON in this exact format (no mark
       phases: parsedRoadmap.phases || [],
       jobApplicationTimeline:
         parsedRoadmap.jobApplicationTimeline ||
-        Start applying after ${Math.ceil(timeframe * 0.75)} months,
+        `Start applying after ${Math.ceil(timeframe * 0.75)} months`,
       createdAt: new Date(),
     };
-    const result = await generateRoadMap(roadmapData, email);
-    if (result) res.status(200).json(roadmapData);
+    const result=await generateRoadMap(roadmapData,email)
+    if(result)
+    res.status(200).json(roadmapData);
   } catch (error) {
     console.error("Error generating roadmap:", error);
     res.status(500).json({
