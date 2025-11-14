@@ -22,7 +22,7 @@ await connectDB();
 
 // Routes
 app.use("/api", userRoutes);
-app.use("/api", jobRoutes);
+app.use("/api/jobs", jobRoutes);
 app.use("/api", authRoutes);
 app.use("/api", skillsRoutes);
 app.use("/api", resourcesRoutes);
