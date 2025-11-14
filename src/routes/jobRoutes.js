@@ -1,5 +1,6 @@
 import express from "express";
-import { seedJobs, getJobs, addJob, getJobById,getRecommendedJobs,getSkillGapAnalysis} from "../controllers/jobController.js";
+import { seedJobs, getJobs, addJob, getJobById,getRecommendedJobs,getSkillGapAnalysis,getAllJobs} from "../controllers/jobController.js";
+import { verifyAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.get('/skill-gap/:userId/:jobId', getSkillGapAnalysis);
 // Get all jobs (with optional query filters)
 router.get("/", getJobs);
 
+
+router.get("/all",getAllJobs)
+// router.get("/all",getAllJobs)
 // Add new job (from frontend)
 router.post("/", addJob);
 
