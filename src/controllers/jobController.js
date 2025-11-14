@@ -281,6 +281,155 @@ export const seedJobs = async (req, res) => {
   }
 };
 // ✅ Get skill gap analysis for a specific job
+// export const getSkillGapAnalysis = async (req, res) => {
+//   try {
+//     const { userId, jobId } = req.params;
+//     const { ObjectId } = await import('mongodb');
+    
+//     if (!ObjectId.isValid(userId) || !ObjectId.isValid(jobId)) {
+//       return res.status(400).json({ 
+//         success: false, 
+//         message: "Invalid user ID or job ID format" 
+//       });
+//     }
+
+//     // Get user data
+//     const user = await userCollection().findOne({ _id: new ObjectId(userId) });
+//     if (!user) {
+//       return res.status(404).json({ 
+//         success: false, 
+//         message: "User not found" 
+//       });
+//     }
+
+//     // Get job data
+//     const job = await jobCollection().findOne({ _id: new ObjectId(jobId) });
+//     if (!job) {
+//       return res.status(404).json({ 
+//         success: false, 
+//         message: "Job not found" 
+//       });
+//     }
+
+//     // Parse user skills
+//     let userSkills = [];
+//     if (typeof user.skills === 'string') {
+//       try {
+//         userSkills = JSON.parse(user.skills);
+//       } catch (e) {
+//         userSkills = user.skills.split(',').map(s => s.trim());
+//       }
+//     } else if (Array.isArray(user.skills)) {
+//       userSkills = user.skills;
+//     }
+
+//     // Normalize skills to lowercase for matching
+//     const normalizedUserSkills = userSkills.map(skill => skill.toLowerCase());
+//     const jobSkills = Array.isArray(job.skills) 
+//       ? job.skills.map(s => s.toLowerCase()) 
+//       : [];
+
+//     // Calculate matched and missing skills
+//     const matchedSkills = [];
+//     const missingSkills = [];
+
+//     // Find matched skills
+//     normalizedUserSkills.forEach(userSkill => {
+//       const matchedJobSkill = job.skills.find(s => s.toLowerCase() === userSkill);
+//       if (matchedJobSkill) {
+//         matchedSkills.push(matchedJobSkill);
+//       }
+//     });
+
+//     // Find missing skills
+//     jobSkills.forEach(jobSkill => {
+//       if (!normalizedUserSkills.includes(jobSkill)) {
+//         const originalSkill = job.skills.find(s => s.toLowerCase() === jobSkill);
+//         missingSkills.push(originalSkill);
+//       }
+//     });
+
+//     // Calculate match percentage
+//     const totalRequiredSkills = job.skills.length;
+//     const matchPercentage = totalRequiredSkills > 0
+//       ? Math.round((matchedSkills.length / totalRequiredSkills) * 100)
+//       : 0;
+
+//     // Determine priority for missing skills
+//     const missingSkillsWithPriority = missingSkills.map((skill, index) => {
+//       // First 2 skills are high priority, rest are medium
+//       const priority = index < 2 ? 'High' : 'Medium';
+      
+//       // Generate learning resources based on skill
+//       const learningResources = generateLearningResources(skill);
+      
+//       return {
+//         skill,
+//         priority,
+//         learningResources
+//       };
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       data: {
+//         job: {
+//           id: job._id,
+//           title: job.title,
+//           company: job.company,
+//           requiredSkills: job.skills
+//         },
+//         user: {
+//           id: user._id,
+//           name: user.fullName,
+//           currentSkills: userSkills
+//         },
+//         analysis: {
+//           matchPercentage,
+//           matchedSkills,
+//           missingSkills: missingSkillsWithPriority,
+//           totalRequiredSkills,
+//           matchedCount: matchedSkills.length,
+//           missingCount: missingSkills.length
+//         }
+//       }
+//     });
+
+//   } catch (error) {
+//     console.error("Error generating skill gap analysis:", error);
+//     res.status(500).json({ 
+//       success: false, 
+//       message: "Failed to generate skill gap analysis", 
+//       error: error.message 
+//     });
+//   }
+// };
+export const getAllJobs = async (req, res) => {
+  try {
+    const jobs = await jobCollection().find().toArray();
+
+    if (!jobs || jobs.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No jobs found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: jobs.length,
+      data: jobs,
+    });
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching jobs",
+      error: error.message,
+    });
+  }
+};
+
 export const getSkillGapAnalysis = async (req, res) => {
   try {
     const { userId, jobId } = req.params;
@@ -349,11 +498,32 @@ export const getSkillGapAnalysis = async (req, res) => {
       }
     });
 
-    // Calculate match percentage
+    // Calculate skill match percentage
     const totalRequiredSkills = job.skills.length;
-    const matchPercentage = totalRequiredSkills > 0
-      ? Math.round((matchedSkills.length / totalRequiredSkills) * 100)
+    const skillMatchPercentage = totalRequiredSkills > 0
+      ? (matchedSkills.length / totalRequiredSkills) * 100
       : 0;
+
+    // Calculate experience level alignment score (0-100)
+    const experienceScore = calculateExperienceAlignment(
+      user.experience, 
+      job.experienceLevel, 
+      job.experience
+    );
+
+    // Calculate career track alignment score (0-100)
+    const careerTrackScore = calculateCareerTrackAlignment(
+      user.careerTrack,
+      job.title,
+      job.details
+    );
+
+    // Calculate overall match score with weighted components
+    const matchScore = Math.round(
+      (skillMatchPercentage * 0.5) +  // 50% weight on skills
+      (experienceScore * 0.3) +        // 30% weight on experience
+      (careerTrackScore * 0.2)         // 20% weight on career track
+    );
 
     // Determine priority for missing skills
     const missingSkillsWithPriority = missingSkills.map((skill, index) => {
@@ -377,15 +547,28 @@ export const getSkillGapAnalysis = async (req, res) => {
           id: job._id,
           title: job.title,
           company: job.company,
-          requiredSkills: job.skills
+          requiredSkills: job.skills,
+          experienceLevel: job.experienceLevel,
+          experience: job.experience
         },
         user: {
           id: user._id,
           name: user.fullName,
-          currentSkills: userSkills
+          currentSkills: userSkills,
+          experience: user.experience,
+          careerTrack: user.careerTrack
+        },
+        matchScore: {
+          overall: matchScore,
+          breakdown: {
+            skillMatch: Math.round(skillMatchPercentage),
+            experienceAlignment: Math.round(experienceScore),
+            careerTrackAlignment: Math.round(careerTrackScore)
+          },
+          rating: getMatchRating(matchScore)
         },
         analysis: {
-          matchPercentage,
+          matchPercentage: Math.round(skillMatchPercentage),
           matchedSkills,
           missingSkills: missingSkillsWithPriority,
           totalRequiredSkills,
@@ -404,6 +587,178 @@ export const getSkillGapAnalysis = async (req, res) => {
     });
   }
 };
+
+/**
+ * Calculate experience level alignment score using heuristic approach
+ * @param {string} userExperience - User's experience (e.g., "Fresher", "0-1 year")
+ * @param {string} jobExperienceLevel - Job's experience level (e.g., "Beginner")
+ * @param {string} jobExperience - Job's experience requirement (e.g., "0-1 year")
+ * @returns {number} Score from 0-100
+ */
+function calculateExperienceAlignment(userExperience, jobExperienceLevel, jobExperience) {
+  // Normalize inputs
+  const userExp = (userExperience || '').toLowerCase().trim();
+  const jobExpLevel = (jobExperienceLevel || '').toLowerCase().trim();
+  const jobExp = (jobExperience || '').toLowerCase().trim();
+
+  // Define experience level mappings
+  const experienceLevels = {
+    'fresher': 0,
+    'beginner': 0,
+    '0-1 year': 0.5,
+    '1-2 years': 1.5,
+    '2-3 years': 2.5,
+    'intermediate': 3,
+    '3-5 years': 4,
+    '5+ years': 6,
+    'senior': 7,
+    'expert': 8
+  };
+
+  // Get numeric values for comparison
+  const getUserExpValue = (exp) => {
+    for (const [key, value] of Object.entries(experienceLevels)) {
+      if (exp.includes(key)) return value;
+    }
+    return 0; // Default to fresher if not found
+  };
+
+  const getJobExpValue = (expLevel, exp) => {
+    // Try job experience first, then fall back to experience level
+    for (const [key, value] of Object.entries(experienceLevels)) {
+      if (exp.includes(key)) return value;
+      if (expLevel.includes(key)) return value;
+    }
+    return 0;
+  };
+
+  const userValue = getUserExpValue(userExp);
+  const jobValue = getJobExpValue(jobExpLevel, jobExp);
+
+  // Calculate alignment score
+  const difference = Math.abs(userValue - jobValue);
+
+  // Perfect match
+  if (difference === 0) return 100;
+  
+  // Within 1 year difference - very good match
+  if (difference <= 1) return 90;
+  
+  // Within 2 years - good match
+  if (difference <= 2) return 75;
+  
+  // Within 3 years - acceptable match
+  if (difference <= 3) return 60;
+  
+  // Within 4 years - moderate match
+  if (difference <= 4) return 45;
+  
+  // More than 4 years - poor match
+  return Math.max(30 - (difference * 5), 0);
+}
+
+/**
+ * Calculate career track alignment score using heuristic approach
+ * @param {string} userCareerTrack - User's preferred career track
+ * @param {string} jobTitle - Job title
+ * @param {string} jobDetails - Job description
+ * @returns {number} Score from 0-100
+ */
+function calculateCareerTrackAlignment(userCareerTrack, jobTitle, jobDetails) {
+  if (!userCareerTrack) return 50; // Neutral score if no career track specified
+
+  const track = userCareerTrack.toLowerCase().trim();
+  const title = (jobTitle || '').toLowerCase();
+  const details = (jobDetails || '').toLowerCase();
+  const combinedText = `${title} ${details}`;
+
+  // Define career track keywords and their variations
+  const trackKeywords = {
+    'software engineering': [
+      'software', 'engineering', 'developer', 'development', 'backend', 
+      'frontend', 'fullstack', 'full stack', 'programmer', 'coding'
+    ],
+    'data science': [
+      'data', 'science', 'scientist', 'analytics', 'analysis', 'machine learning',
+      'ml', 'ai', 'artificial intelligence', 'statistics', 'research'
+    ],
+    'ui/ux': [
+      'ui', 'ux', 'design', 'designer', 'user interface', 'user experience',
+      'product design', 'visual', 'figma', 'prototype', 'wireframe'
+    ],
+    'web development': [
+      'web', 'website', 'frontend', 'front end', 'react', 'angular', 'vue',
+      'html', 'css', 'javascript', 'responsive'
+    ],
+    'mobile development': [
+      'mobile', 'android', 'ios', 'app', 'application', 'flutter',
+      'react native', 'swift', 'kotlin'
+    ],
+    'devops': [
+      'devops', 'operations', 'infrastructure', 'deployment', 'ci/cd',
+      'cloud', 'aws', 'docker', 'kubernetes', 'automation'
+    ],
+    'cybersecurity': [
+      'security', 'cybersecurity', 'penetration', 'ethical hacking',
+      'network security', 'encryption', 'vulnerability'
+    ]
+  };
+
+  // Find matching keywords
+  let matchCount = 0;
+  let totalKeywords = 0;
+
+  // Get keywords for user's career track
+  for (const [trackName, keywords] of Object.entries(trackKeywords)) {
+    if (track.includes(trackName.toLowerCase()) || trackName.toLowerCase().includes(track)) {
+      totalKeywords = keywords.length;
+      
+      // Count how many keywords appear in job title/details
+      keywords.forEach(keyword => {
+        if (combinedText.includes(keyword)) {
+          matchCount++;
+        }
+      });
+      
+      break;
+    }
+  }
+
+  // If no specific track found, do a general match
+  if (totalKeywords === 0) {
+    // Check if user's career track words appear in job
+    const trackWords = track.split(' ');
+    trackWords.forEach(word => {
+      if (word.length > 3 && combinedText.includes(word)) {
+        matchCount++;
+      }
+    });
+    totalKeywords = trackWords.filter(w => w.length > 3).length || 1;
+  }
+
+  // Calculate percentage match
+  const matchPercentage = (matchCount / totalKeywords) * 100;
+
+  // Return score with minimum threshold
+  if (matchPercentage >= 60) return 100;      // Strong alignment
+  if (matchPercentage >= 40) return 85;       // Good alignment
+  if (matchPercentage >= 25) return 70;       // Moderate alignment
+  if (matchPercentage >= 15) return 55;       // Weak alignment
+  return 40;                                   // Poor alignment (minimum score)
+}
+
+/**
+ * Get match rating based on overall score
+ * @param {number} score - Overall match score (0-100)
+ * @returns {string} Rating description
+ */
+function getMatchRating(score) {
+  if (score >= 85) return 'Excellent Match';
+  if (score >= 70) return 'Great Match';
+  if (score >= 55) return 'Good Match';
+  if (score >= 40) return 'Fair Match';
+  return 'Poor Match';
+}
 
 // Helper function to generate learning resources
 function generateLearningResources(skill) {

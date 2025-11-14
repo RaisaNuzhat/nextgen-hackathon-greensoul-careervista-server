@@ -6,6 +6,7 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import careerRoutes from "./routes/careerRoutes.js"
 import roadmapRoutes from "./routes/roadmapRoutes.js";
 import resourcesRoutes from "./routes/resourcesRoutes.js";
 import skillsRoutes from "./routes/skillsRoutes.js";
@@ -27,6 +28,8 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api", authRoutes);
 app.use("/api", skillsRoutes);
 app.use("/api", resourcesRoutes);
+app.use("/api/careerbot", careerRoutes);
+
 app.use("/api", roadmapRoutes);
 
 // app.use("/api/jobs", jobRoutes);
