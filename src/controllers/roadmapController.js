@@ -1,8 +1,6 @@
 import { getDB } from "../config/database.js";
 import { generateRoadMap, getRoadMap } from "../models/roadmapModel.js";
 
-
-
 export const getRoadmap = async (req, res) => {
   try {
     const email = req.params.email;
@@ -14,7 +12,6 @@ export const getRoadmap = async (req, res) => {
     res.status(500).send({ message: "Server Error", error });
   }
 };
-
 
 async function queryHuggingFace(prompt) {
   const response = await fetch(
@@ -39,7 +36,9 @@ async function queryHuggingFace(prompt) {
   const data = await response.json();
   console.log(data?.choices[0]?.message?.content);
   if (data.error) throw new Error(data.error);
-  return data?.choices[0]?.message?.content || "No response received from model.";
+  return (
+    data?.choices[0]?.message?.content || "No response received from model."
+  );
 }
 export const generateRoadmap = async (req, res) => {
   try {
@@ -159,9 +158,8 @@ IMPORTANT: Return your response ONLY as valid JSON in this exact format (no mark
         `Start applying after ${Math.ceil(timeframe * 0.75)} months`,
       createdAt: new Date(),
     };
-    const result=await generateRoadMap(roadmapData,email)
-    if(result)
-    res.status(200).json(roadmapData);
+    const result = await generateRoadMap(roadmapData, email);
+    if (result) res.status(200).json(roadmapData);
   } catch (error) {
     console.error("Error generating roadmap:", error);
     res.status(500).json({

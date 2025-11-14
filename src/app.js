@@ -11,6 +11,7 @@ import resourcesRoutes from "./routes/resourcesRoutes.js";
 import skillsRoutes from "./routes/skillsRoutes.js";
 import { connectDB } from "./config/database.js";
 import { corsMiddleware } from "./middlewares/corsMiddleware.js";
+import  cvAnalysisRoutes from './routes/cvAnalysisRoutes.js';
 
 const app = express();
 
@@ -28,6 +29,10 @@ app.use("/api", authRoutes);
 app.use("/api", skillsRoutes);
 app.use("/api", resourcesRoutes);
 app.use("/api", roadmapRoutes);
+app.use('/api', cvAnalysisRoutes);
+
+// Serve static files for uploaded CVs
+app.use('/uploads', express.static('uploads'));
 
 // app.use("/api/jobs", jobRoutes);
 // app.use("/api/resources", resourceRoutes);
