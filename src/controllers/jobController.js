@@ -343,7 +343,7 @@ export const getJobs = async (req, res) => {
   }
 };
 
-// ✅ Get job by id
+
 export const getJobById = async (req, res) => {
   try {
     const { id } = req.params;
