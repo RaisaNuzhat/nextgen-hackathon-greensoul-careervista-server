@@ -280,6 +280,381 @@ export const seedJobs = async (req, res) => {
     });
   }
 };
+// ✅ Get skill gap analysis for a specific job
+export const getSkillGapAnalysis = async (req, res) => {
+  try {
+    const { userId, jobId } = req.params;
+    const { ObjectId } = await import('mongodb');
+    
+    if (!ObjectId.isValid(userId) || !ObjectId.isValid(jobId)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid user ID or job ID format" 
+      });
+    }
+
+    // Get user data
+    const user = await userCollection().findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    // Get job data
+    const job = await jobCollection().findOne({ _id: new ObjectId(jobId) });
+    if (!job) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Job not found" 
+      });
+    }
+
+    // Parse user skills
+    let userSkills = [];
+    if (typeof user.skills === 'string') {
+      try {
+        userSkills = JSON.parse(user.skills);
+      } catch (e) {
+        userSkills = user.skills.split(',').map(s => s.trim());
+      }
+    } else if (Array.isArray(user.skills)) {
+      userSkills = user.skills;
+    }
+
+    // Normalize skills to lowercase for matching
+    const normalizedUserSkills = userSkills.map(skill => skill.toLowerCase());
+    const jobSkills = Array.isArray(job.skills) 
+      ? job.skills.map(s => s.toLowerCase()) 
+      : [];
+
+    // Calculate matched and missing skills
+    const matchedSkills = [];
+    const missingSkills = [];
+
+    // Find matched skills
+    normalizedUserSkills.forEach(userSkill => {
+      const matchedJobSkill = job.skills.find(s => s.toLowerCase() === userSkill);
+      if (matchedJobSkill) {
+        matchedSkills.push(matchedJobSkill);
+      }
+    });
+
+    // Find missing skills
+    jobSkills.forEach(jobSkill => {
+      if (!normalizedUserSkills.includes(jobSkill)) {
+        const originalSkill = job.skills.find(s => s.toLowerCase() === jobSkill);
+        missingSkills.push(originalSkill);
+      }
+    });
+
+    // Calculate match percentage
+    const totalRequiredSkills = job.skills.length;
+    const matchPercentage = totalRequiredSkills > 0
+      ? Math.round((matchedSkills.length / totalRequiredSkills) * 100)
+      : 0;
+
+    // Determine priority for missing skills
+    const missingSkillsWithPriority = missingSkills.map((skill, index) => {
+      // First 2 skills are high priority, rest are medium
+      const priority = index < 2 ? 'High' : 'Medium';
+      
+      // Generate learning resources based on skill
+      const learningResources = generateLearningResources(skill);
+      
+      return {
+        skill,
+        priority,
+        learningResources
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        job: {
+          id: job._id,
+          title: job.title,
+          company: job.company,
+          requiredSkills: job.skills
+        },
+        user: {
+          id: user._id,
+          name: user.fullName,
+          currentSkills: userSkills
+        },
+        analysis: {
+          matchPercentage,
+          matchedSkills,
+          missingSkills: missingSkillsWithPriority,
+          totalRequiredSkills,
+          matchedCount: matchedSkills.length,
+          missingCount: missingSkills.length
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error generating skill gap analysis:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to generate skill gap analysis", 
+      error: error.message 
+    });
+  }
+};
+
+// Helper function to generate learning resources
+function generateLearningResources(skill) {
+  const skillLower = skill.toLowerCase();
+  
+  // Resource templates based on popular skills
+  const resourceMap = {
+    'react': [
+      {
+        title: 'React - The Complete Guide 2024',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/react-the-complete-guide-incl-redux/',
+        duration: '49 hours',
+        rating: '4.6'
+      },
+      {
+        title: 'React Official Documentation',
+        platform: 'React.dev',
+        type: 'documentation',
+        url: 'https://react.dev/learn',
+        duration: 'Self-paced',
+        rating: '4.9'
+      },
+      {
+        title: 'React Course for Beginners',
+        platform: 'YouTube - freeCodeCamp',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=bMknfKXIFA8',
+        duration: '12 hours',
+        rating: '4.7'
+      }
+    ],
+    'node.js': [
+      {
+        title: 'Node.js - The Complete Guide',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/nodejs-the-complete-guide/',
+        duration: '40 hours',
+        rating: '4.7'
+      },
+      {
+        title: 'Node.js Official Documentation',
+        platform: 'Node.js.org',
+        type: 'documentation',
+        url: 'https://nodejs.org/en/docs/',
+        duration: 'Self-paced',
+        rating: '4.8'
+      },
+      {
+        title: 'Node.js Tutorial for Beginners',
+        platform: 'YouTube - Programming with Mosh',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=TlB_eWDSMt4',
+        duration: '1 hour',
+        rating: '4.7'
+      }
+    ],
+    'mongodb': [
+      {
+        title: 'MongoDB - The Complete Developer Guide',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/mongodb-the-complete-developers-guide/',
+        duration: '17 hours',
+        rating: '4.6'
+      },
+      {
+        title: 'MongoDB University Free Courses',
+        platform: 'MongoDB University',
+        type: 'course',
+        url: 'https://learn.mongodb.com/',
+        duration: 'Self-paced',
+        rating: '4.8'
+      },
+      {
+        title: 'MongoDB Crash Course',
+        platform: 'YouTube - Traversy Media',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=-56x56UppqQ',
+        duration: '30 minutes',
+        rating: '4.7'
+      }
+    ],
+    'javascript': [
+      {
+        title: 'JavaScript - The Complete Guide 2024',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/javascript-the-complete-guide-2020-beginner-advanced/',
+        duration: '52 hours',
+        rating: '4.6'
+      },
+      {
+        title: 'MDN Web Docs - JavaScript',
+        platform: 'MDN',
+        type: 'documentation',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+        duration: 'Self-paced',
+        rating: '4.9'
+      },
+      {
+        title: 'JavaScript Tutorial for Beginners',
+        platform: 'YouTube - Programming with Mosh',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=W6NZfCO5SIk',
+        duration: '1 hour',
+        rating: '4.8'
+      }
+    ],
+    'typescript': [
+      {
+        title: 'Understanding TypeScript - 2024 Edition',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/understanding-typescript/',
+        duration: '15 hours',
+        rating: '4.7'
+      },
+      {
+        title: 'TypeScript Official Handbook',
+        platform: 'TypeScript.org',
+        type: 'documentation',
+        url: 'https://www.typescriptlang.org/docs/handbook/intro.html',
+        duration: 'Self-paced',
+        rating: '4.9'
+      },
+      {
+        title: 'TypeScript Course for Beginners',
+        platform: 'YouTube - freeCodeCamp',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=gp5H0Vw39yw',
+        duration: '1.5 hours',
+        rating: '4.6'
+      }
+    ],
+    'python': [
+      {
+        title: 'Complete Python Bootcamp',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/complete-python-bootcamp/',
+        duration: '22 hours',
+        rating: '4.6'
+      },
+      {
+        title: 'Python Official Documentation',
+        platform: 'Python.org',
+        type: 'documentation',
+        url: 'https://docs.python.org/3/tutorial/',
+        duration: 'Self-paced',
+        rating: '4.8'
+      },
+      {
+        title: 'Python for Beginners',
+        platform: 'YouTube - Programming with Mosh',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=_uQrJ0TkZlc',
+        duration: '6 hours',
+        rating: '4.7'
+      }
+    ],
+    'css': [
+      {
+        title: 'Advanced CSS and Sass',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/advanced-css-and-sass/',
+        duration: '28 hours',
+        rating: '4.7'
+      },
+      {
+        title: 'MDN CSS Documentation',
+        platform: 'MDN',
+        type: 'documentation',
+        url: 'https://developer.mozilla.org/en-US/docs/Web/CSS',
+        duration: 'Self-paced',
+        rating: '4.9'
+      },
+      {
+        title: 'CSS Tutorial - Zero to Hero',
+        platform: 'YouTube - freeCodeCamp',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=1Rs2ND1ryYc',
+        duration: '11 hours',
+        rating: '4.6'
+      }
+    ],
+    'express': [
+      {
+        title: 'Node.js, Express & MongoDB Dev',
+        platform: 'Udemy',
+        type: 'course',
+        url: 'https://www.udemy.com/course/nodejs-express-mongodb-bootcamp/',
+        duration: '42 hours',
+        rating: '4.7'
+      },
+      {
+        title: 'Express.js Documentation',
+        platform: 'Express.js',
+        type: 'documentation',
+        url: 'https://expressjs.com/',
+        duration: 'Self-paced',
+        rating: '4.8'
+      },
+      {
+        title: 'Express JS Tutorial',
+        platform: 'YouTube - Traversy Media',
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=L72fhGm1tfE',
+        duration: '1 hour',
+        rating: '4.6'
+      }
+    ]
+  };
+
+  // Check if we have predefined resources for this skill
+  if (resourceMap[skillLower]) {
+    return resourceMap[skillLower];
+  }
+
+  // Generate generic resources for unknown skills
+  return [
+    {
+      title: `Learn ${skill} - Complete Guide`,
+      platform: 'Udemy',
+      type: 'course',
+      url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(skill)}`,
+      duration: 'Varies',
+      rating: '4.5'
+    },
+    {
+      title: `${skill} Documentation`,
+      platform: 'Official Docs',
+      type: 'documentation',
+      url: `https://www.google.com/search?q=${encodeURIComponent(skill + ' documentation')}`,
+      duration: 'Self-paced',
+      rating: '4.7'
+    },
+    {
+      title: `${skill} Tutorial for Beginners`,
+      platform: 'YouTube',
+      type: 'video',
+      url: `https://www.youtube.com/results?search_query=${encodeURIComponent(skill + ' tutorial')}`,
+      duration: 'Varies',
+      rating: '4.5'
+    }
+  ];
+}
+
 
 
 // ✅ Seed jobs - only run once to populate initial data
@@ -379,7 +754,7 @@ export const getJobById = async (req, res) => {
   }
 };
 
-// ✅ Get recommended jobs for a user
+//  Get recommended jobs for a user
 export const getRecommendedJobs = async (req, res) => {
   try {
     const { userId } = req.params;
