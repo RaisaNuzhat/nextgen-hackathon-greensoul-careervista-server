@@ -7,9 +7,9 @@ export const connectDB = async () => {
   try {
     const uri = process.env.DATABASE_URL;
     
-    // Check if DATABASE_URL exists
+   
     if (!uri) {
-      throw new Error("❌ DATABASE_URL is not defined in .env file");
+      throw new Error(" DATABASE_URL is not defined in .env file");
     }
     
     console.log("🔄 Connecting to MongoDB...");
@@ -20,9 +20,9 @@ export const connectDB = async () => {
     await client.db("admin").command({ ping: 1 });
     
     db = client.db("careervista");
-    console.log("✅ MongoDB connected successfully to database: careervista");
+    console.log(" MongoDB connected successfully to database: careervista");
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error.message);
+    console.error(" MongoDB connection error:", error.message);
     process.exit(1);
   }
 };

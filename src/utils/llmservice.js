@@ -1,66 +1,3 @@
-// export default async function extractSkillsWithLLM(cvText) {
-//   const prompt = `You are an expert career advisor and skill analyzer. Analyze the following CV/Resume text and extract:
-
-// 1. Key skills (programming languages, frameworks, tools, technologies)
-// 2. Tools and technologies explicitly mentioned
-
-// CV Text:
-// ${cvText}
-
-// Respond ONLY with a valid JSON object in this exact format (no markdown, no extra text):
-// {
-//   "skills": ["skill1", "skill2", "skill3"],
-//   "tools": ["tool1", "tool2", "tool3"]
-// }
-
-// Important:
-// - Use proper capitalization (e.g., "JavaScript" not "javascript")
-// - Return only the JSON, nothing else`;
-
-//   try {
-//     const response = await fetch(
-//       "https://router.huggingface.co/v1/chat/completions",
-//       {
-//         method: "POST",
-//         headers: {
-//           Authorization: `Bearer ${process.env.CAREERVISTA2_TOKEN}`,
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           model: "openai/gpt-oss-120b:fastest",
-//           messages: [
-//             {
-//               role: "user",
-//               content: prompt,
-//             },
-//           ],
-//           temperature: 0.3,
-//           max_tokens: 1000,
-//         }),
-//       }
-//     );
-
-//     if (!response.ok) {
-//       throw new Error(`LLM API error: ${response.status}`);
-//     }
-
-//     const data = await response.json();
-//     console.log(data);
-//     const content = data.choices[0].message.content.trim();
-
-//     // Remove markdown code blocks if present
-//     const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-//     const extracted = JSON.parse(cleanContent);
-
-//     return {
-//       skills: extracted.skills || [],
-//       tools: extracted.tools || []
-//     };
-//   } catch (error) {
-//     console.error('LLM extraction error:', error);
-//     throw new Error('Failed to extract skills with LLM: ' + error.message);
-//   }
-// }
 export default async function extractSkillsWithLLM(cvText) {
   const prompt = `You are an expert career advisor and skill analyzer. Analyze the following CV/Resume text and extract:
 
@@ -122,10 +59,8 @@ Important:
 
     const data = await response.json();
 
-    // Log raw response for debugging (remove or reduce in production)
     console.log("LLM raw response:", data?.choices[0]?.message?.content);
 
-    // Try multiple possible locations for the text content (robust)
     const rawContent =
       data?.choices[0]?.message?.content ??
       data?.choices?.[0]?.message ??
@@ -144,25 +79,21 @@ Important:
       throw new Error("LLM returned no content");
     }
 
-    // rawContent may be an object or string; convert to string
     const contentStr =
       typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
 
-    // Remove markdown code fences and trim
     const cleaned = contentStr.replace(/```json\n?|```/g, "").trim();
 
-    // Try direct JSON parse first
     let parsed = null;
     try {
       parsed = JSON.parse(cleaned);
     } catch (e) {
-      // If direct parse failed, try to find the first JSON object substring {...}
       const jsonMatch = cleaned.match(/\{[\s\S]*\}$/);
       if (jsonMatch) {
         try {
           parsed = JSON.parse(jsonMatch[0]);
         } catch (e2) {
-          // fall through to error below
+          
         }
       }
     }

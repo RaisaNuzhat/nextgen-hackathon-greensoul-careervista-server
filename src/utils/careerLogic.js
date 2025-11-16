@@ -1,5 +1,3 @@
-// utils/careerLogic.js
-
 function generateCareerResponse(query) {
   const q = query.toLowerCase();
 
