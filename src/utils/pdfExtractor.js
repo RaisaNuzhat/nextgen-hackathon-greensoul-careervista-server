@@ -14,7 +14,7 @@ export  async function extractTextFromPDF(filePath) {
       }
 
       try {
-        // Combine text from all pages
+        // combine text from all pages
         const text = data.pages
           .map((page) => page.content.map((c) => c.str).join(' '))
           .join('\n\n');

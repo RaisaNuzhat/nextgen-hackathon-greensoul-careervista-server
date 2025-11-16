@@ -280,130 +280,7 @@ export const seedJobs = async (req, res) => {
     });
   }
 };
-// ✅ Get skill gap analysis for a specific job
-// export const getSkillGapAnalysis = async (req, res) => {
-//   try {
-//     const { userId, jobId } = req.params;
-//     const { ObjectId } = await import('mongodb');
-    
-//     if (!ObjectId.isValid(userId) || !ObjectId.isValid(jobId)) {
-//       return res.status(400).json({ 
-//         success: false, 
-//         message: "Invalid user ID or job ID format" 
-//       });
-//     }
 
-//     // Get user data
-//     const user = await userCollection().findOne({ _id: new ObjectId(userId) });
-//     if (!user) {
-//       return res.status(404).json({ 
-//         success: false, 
-//         message: "User not found" 
-//       });
-//     }
-
-//     // Get job data
-//     const job = await jobCollection().findOne({ _id: new ObjectId(jobId) });
-//     if (!job) {
-//       return res.status(404).json({ 
-//         success: false, 
-//         message: "Job not found" 
-//       });
-//     }
-
-//     // Parse user skills
-//     let userSkills = [];
-//     if (typeof user.skills === 'string') {
-//       try {
-//         userSkills = JSON.parse(user.skills);
-//       } catch (e) {
-//         userSkills = user.skills.split(',').map(s => s.trim());
-//       }
-//     } else if (Array.isArray(user.skills)) {
-//       userSkills = user.skills;
-//     }
-
-//     // Normalize skills to lowercase for matching
-//     const normalizedUserSkills = userSkills.map(skill => skill.toLowerCase());
-//     const jobSkills = Array.isArray(job.skills) 
-//       ? job.skills.map(s => s.toLowerCase()) 
-//       : [];
-
-//     // Calculate matched and missing skills
-//     const matchedSkills = [];
-//     const missingSkills = [];
-
-//     // Find matched skills
-//     normalizedUserSkills.forEach(userSkill => {
-//       const matchedJobSkill = job.skills.find(s => s.toLowerCase() === userSkill);
-//       if (matchedJobSkill) {
-//         matchedSkills.push(matchedJobSkill);
-//       }
-//     });
-
-//     // Find missing skills
-//     jobSkills.forEach(jobSkill => {
-//       if (!normalizedUserSkills.includes(jobSkill)) {
-//         const originalSkill = job.skills.find(s => s.toLowerCase() === jobSkill);
-//         missingSkills.push(originalSkill);
-//       }
-//     });
-
-//     // Calculate match percentage
-//     const totalRequiredSkills = job.skills.length;
-//     const matchPercentage = totalRequiredSkills > 0
-//       ? Math.round((matchedSkills.length / totalRequiredSkills) * 100)
-//       : 0;
-
-//     // Determine priority for missing skills
-//     const missingSkillsWithPriority = missingSkills.map((skill, index) => {
-//       // First 2 skills are high priority, rest are medium
-//       const priority = index < 2 ? 'High' : 'Medium';
-      
-//       // Generate learning resources based on skill
-//       const learningResources = generateLearningResources(skill);
-      
-//       return {
-//         skill,
-//         priority,
-//         learningResources
-//       };
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       data: {
-//         job: {
-//           id: job._id,
-//           title: job.title,
-//           company: job.company,
-//           requiredSkills: job.skills
-//         },
-//         user: {
-//           id: user._id,
-//           name: user.fullName,
-//           currentSkills: userSkills
-//         },
-//         analysis: {
-//           matchPercentage,
-//           matchedSkills,
-//           missingSkills: missingSkillsWithPriority,
-//           totalRequiredSkills,
-//           matchedCount: matchedSkills.length,
-//           missingCount: missingSkills.length
-//         }
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error("Error generating skill gap analysis:", error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: "Failed to generate skill gap analysis", 
-//       error: error.message 
-//     });
-//   }
-// };
 export const getAllJobs = async (req, res) => {
   try {
     const jobs = await jobCollection().find().toArray();
@@ -442,7 +319,7 @@ export const getSkillGapAnalysis = async (req, res) => {
       });
     }
 
-    // Get user data
+ 
     const user = await userCollection().findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ 
@@ -451,7 +328,7 @@ export const getSkillGapAnalysis = async (req, res) => {
       });
     }
 
-    // Get job data
+   
     const job = await jobCollection().findOne({ _id: new ObjectId(jobId) });
     if (!job) {
       return res.status(404).json({ 
@@ -460,7 +337,7 @@ export const getSkillGapAnalysis = async (req, res) => {
       });
     }
 
-    // Parse user skills
+   
     let userSkills = [];
     if (typeof user.skills === 'string') {
       try {
@@ -472,17 +349,17 @@ export const getSkillGapAnalysis = async (req, res) => {
       userSkills = user.skills;
     }
 
-    // Normalize skills to lowercase for matching
+    
     const normalizedUserSkills = userSkills.map(skill => skill.toLowerCase());
     const jobSkills = Array.isArray(job.skills) 
       ? job.skills.map(s => s.toLowerCase()) 
       : [];
 
-    // Calculate matched and missing skills
+ 
     const matchedSkills = [];
     const missingSkills = [];
 
-    // Find matched skills
+    
     normalizedUserSkills.forEach(userSkill => {
       const matchedJobSkill = job.skills.find(s => s.toLowerCase() === userSkill);
       if (matchedJobSkill) {
@@ -490,7 +367,7 @@ export const getSkillGapAnalysis = async (req, res) => {
       }
     });
 
-    // Find missing skills
+   
     jobSkills.forEach(jobSkill => {
       if (!normalizedUserSkills.includes(jobSkill)) {
         const originalSkill = job.skills.find(s => s.toLowerCase() === jobSkill);
@@ -498,39 +375,36 @@ export const getSkillGapAnalysis = async (req, res) => {
       }
     });
 
-    // Calculate skill match percentage
+    
     const totalRequiredSkills = job.skills.length;
     const skillMatchPercentage = totalRequiredSkills > 0
       ? (matchedSkills.length / totalRequiredSkills) * 100
       : 0;
 
-    // Calculate experience level alignment score (0-100)
+   
     const experienceScore = calculateExperienceAlignment(
       user.experience, 
       job.experienceLevel, 
       job.experience
     );
 
-    // Calculate career track alignment score (0-100)
+   
     const careerTrackScore = calculateCareerTrackAlignment(
       user.careerTrack,
       job.title,
       job.details
     );
 
-    // Calculate overall match score with weighted components
+    // overall match score with weighted components
     const matchScore = Math.round(
       (skillMatchPercentage * 0.5) +  // 50% weight on skills
       (experienceScore * 0.3) +        // 30% weight on experience
       (careerTrackScore * 0.2)         // 20% weight on career track
     );
 
-    // Determine priority for missing skills
     const missingSkillsWithPriority = missingSkills.map((skill, index) => {
-      // First 2 skills are high priority, rest are medium
       const priority = index < 2 ? 'High' : 'Medium';
       
-      // Generate learning resources based on skill
       const learningResources = generateLearningResources(skill);
       
       return {
@@ -596,12 +470,12 @@ export const getSkillGapAnalysis = async (req, res) => {
  * @returns {number} Score from 0-100
  */
 function calculateExperienceAlignment(userExperience, jobExperienceLevel, jobExperience) {
-  // Normalize inputs
+
   const userExp = (userExperience || '').toLowerCase().trim();
   const jobExpLevel = (jobExperienceLevel || '').toLowerCase().trim();
   const jobExp = (jobExperience || '').toLowerCase().trim();
 
-  // Define experience level mappings
+  
   const experienceLevels = {
     'fresher': 0,
     'beginner': 0,
@@ -615,16 +489,16 @@ function calculateExperienceAlignment(userExperience, jobExperienceLevel, jobExp
     'expert': 8
   };
 
-  // Get numeric values for comparison
+ 
   const getUserExpValue = (exp) => {
     for (const [key, value] of Object.entries(experienceLevels)) {
       if (exp.includes(key)) return value;
     }
-    return 0; // Default to fresher if not found
+    return 0;
   };
 
   const getJobExpValue = (expLevel, exp) => {
-    // Try job experience first, then fall back to experience level
+    
     for (const [key, value] of Object.entries(experienceLevels)) {
       if (exp.includes(key)) return value;
       if (expLevel.includes(key)) return value;
@@ -635,7 +509,7 @@ function calculateExperienceAlignment(userExperience, jobExperienceLevel, jobExp
   const userValue = getUserExpValue(userExp);
   const jobValue = getJobExpValue(jobExpLevel, jobExp);
 
-  // Calculate alignment score
+ 
   const difference = Math.abs(userValue - jobValue);
 
   // Perfect match
@@ -672,7 +546,7 @@ function calculateCareerTrackAlignment(userCareerTrack, jobTitle, jobDetails) {
   const details = (jobDetails || '').toLowerCase();
   const combinedText = `${title} ${details}`;
 
-  // Define career track keywords and their variations
+
   const trackKeywords = {
     'software engineering': [
       'software', 'engineering', 'developer', 'development', 'backend', 
@@ -704,16 +578,15 @@ function calculateCareerTrackAlignment(userCareerTrack, jobTitle, jobDetails) {
     ]
   };
 
-  // Find matching keywords
+
   let matchCount = 0;
   let totalKeywords = 0;
 
-  // Get keywords for user's career track
+
   for (const [trackName, keywords] of Object.entries(trackKeywords)) {
     if (track.includes(trackName.toLowerCase()) || trackName.toLowerCase().includes(track)) {
       totalKeywords = keywords.length;
       
-      // Count how many keywords appear in job title/details
       keywords.forEach(keyword => {
         if (combinedText.includes(keyword)) {
           matchCount++;
@@ -726,7 +599,6 @@ function calculateCareerTrackAlignment(userCareerTrack, jobTitle, jobDetails) {
 
   // If no specific track found, do a general match
   if (totalKeywords === 0) {
-    // Check if user's career track words appear in job
     const trackWords = track.split(' ');
     trackWords.forEach(word => {
       if (word.length > 3 && combinedText.includes(word)) {
@@ -736,7 +608,7 @@ function calculateCareerTrackAlignment(userCareerTrack, jobTitle, jobDetails) {
     totalKeywords = trackWords.filter(w => w.length > 3).length || 1;
   }
 
-  // Calculate percentage match
+ 
   const matchPercentage = (matchCount / totalKeywords) * 100;
 
   // Return score with minimum threshold
@@ -760,11 +632,11 @@ function getMatchRating(score) {
   return 'Poor Match';
 }
 
-// Helper function to generate learning resources
+
 function generateLearningResources(skill) {
   const skillLower = skill.toLowerCase();
   
-  // Resource templates based on popular skills
+
   const resourceMap = {
     'react': [
       {
@@ -976,12 +848,11 @@ function generateLearningResources(skill) {
     ]
   };
 
-  // Check if we have predefined resources for this skill
   if (resourceMap[skillLower]) {
     return resourceMap[skillLower];
   }
 
-  // Generate generic resources for unknown skills
+
   return [
     {
       title: `Learn ${skill} - Complete Guide`,
@@ -1010,37 +881,6 @@ function generateLearningResources(skill) {
   ];
 }
 
-
-
-// ✅ Seed jobs - only run once to populate initial data
-// export const seedJobs = async (req, res) => {
-//   try {
-//     const existingJobs = await jobCollection().countDocuments();
-
-//     if (existingJobs > 0) {
-//       return res.status(200).json({ 
-//         message: "Jobs already seeded", 
-//         count: existingJobs 
-//       });
-//     }
-
-//     const jobs = [
- 
-// ];
-
-
-//     const result = await jobCollection().insertMany(jobs);
-//     res.status(201).json({ 
-//       message: "Jobs seeded successfully", 
-//       insertedCount: result.insertedCount 
-//     });
-//   } catch (error) {
-//     console.error("Error seeding jobs:", error);
-//     res.status(500).json({ message: "Error seeding jobs", error: error.message });
-//   }
-// };
-
-// ✅ Get all jobs (with optional filters)
 export const getJobs = async (req, res) => {
   try {
     const { title, location, jobType } = req.query;
@@ -1109,7 +949,6 @@ export const getJobById = async (req, res) => {
   }
 };
 
-//  Get recommended jobs for a user
 export const getRecommendedJobs = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -1122,7 +961,7 @@ export const getRecommendedJobs = async (req, res) => {
       });
     }
 
-    // Get user data
+   
     const user = await userCollection().findOne({ _id: new ObjectId(userId) });
     
     if (!user) {
@@ -1132,7 +971,7 @@ export const getRecommendedJobs = async (req, res) => {
       });
     }
 
-    // Parse user skills (handle both string and array formats)
+   
     let userSkills = [];
     if (typeof user.skills === 'string') {
       try {
@@ -1144,27 +983,27 @@ export const getRecommendedJobs = async (req, res) => {
       userSkills = user.skills;
     }
 
-    // Normalize skills to lowercase for matching
+   
     const normalizedUserSkills = userSkills.map(skill => skill.toLowerCase());
 
-    // Get all jobs
+
     const allJobs = await jobCollection().find({}).toArray();
 
-    // Calculate match percentage for each job
+ 
     const jobsWithMatch = allJobs.map(job => {
       let matchScore = 0;
       let matchedSkills = [];
 
-      // Normalize job skills
+     
       const jobSkills = Array.isArray(job.skills) 
         ? job.skills.map(s => s.toLowerCase()) 
         : [];
 
-      // Calculate skill match
+     
       normalizedUserSkills.forEach(userSkill => {
         if (jobSkills.includes(userSkill)) {
           matchedSkills.push(
-            // Find original casing from user skills or job skills
+            
             userSkills.find(s => s.toLowerCase() === userSkill) || 
             job.skills.find(s => s.toLowerCase() === userSkill)
           );
@@ -1172,12 +1011,12 @@ export const getRecommendedJobs = async (req, res) => {
         }
       });
 
-      // Calculate percentage based on user's skills
+      
       const matchPercentage = normalizedUserSkills.length > 0
         ? Math.round((matchScore / normalizedUserSkills.length) * 100)
         : 0;
 
-      // Career track matching bonus
+      
       let trackBonus = 0;
       if (user.careerTrack && job.title) {
         const track = user.careerTrack.toLowerCase();
@@ -1192,7 +1031,7 @@ export const getRecommendedJobs = async (req, res) => {
         }
       }
 
-      // Experience level matching
+     
       let experienceBonus = 0;
       if (user.experience && job.experienceLevel) {
         const userExp = user.experience.toLowerCase();
@@ -1217,13 +1056,13 @@ export const getRecommendedJobs = async (req, res) => {
       };
     });
 
-    // Sort by match percentage (highest first)
+  
     jobsWithMatch.sort((a, b) => b.matchPercentage - a.matchPercentage);
 
-    // Filter jobs with at least some match (>0%) or return top jobs anyway
+   
     const recommendedJobs = jobsWithMatch.filter(job => job.matchPercentage > 0);
     
-    // If no matches found, return top 6 jobs anyway
+   
     const finalJobs = recommendedJobs.length > 0 
       ? recommendedJobs 
       : jobsWithMatch.slice(0, 6);
@@ -1309,7 +1148,7 @@ export const addJob = async (req, res) => {
       jobId: result.insertedId,
     });
   } catch (error) {
-    console.error("❌ Error adding job:", error);
+    console.error(" Error adding job:", error);
     res.status(500).json({
       message: "Server error while adding job",
       error: error.message,

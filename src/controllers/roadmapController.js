@@ -100,14 +100,12 @@ IMPORTANT: Return your response ONLY as valid JSON in this exact format (no mark
   "jobApplicationTimeline": "When to start applying for jobs"
 }`;
 
-    // Querying AI
+   
     console.log("Querying AI for roadmap generation...");
     const aiResponse = await queryHuggingFace(prompt);
 
-    // Parse AI response
     let parsedRoadmap;
     try {
-      // Remove markdown code blocks if present
       let cleanResponse = aiResponse.trim();
       if (cleanResponse.startsWith("```json")) {
         cleanResponse = cleanResponse
@@ -122,7 +120,7 @@ IMPORTANT: Return your response ONLY as valid JSON in this exact format (no mark
       console.error("Failed to parse AI response:", parseError);
       console.log("Raw AI response:", aiResponse);
 
-      // Fallback: Create a basic roadmap structure
+      // Fallback
       parsedRoadmap = {
         phases: [
           {

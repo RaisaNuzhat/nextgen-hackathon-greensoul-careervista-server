@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config(); // ← Must be at the VERY TOP before any imports that use env variables
+dotenv.config(); 
 
 import express from "express";
 import cors from "cors";
@@ -16,14 +16,14 @@ import  cvAnalysisRoutes from './routes/cvAnalysisRoutes.js';
 
 const app = express();
 
-// Middlewares
+
 app.use(corsMiddleware);
 app.use(express.json()); 
 
-// Connect MongoDB
+
 await connectDB(); 
 
-// Routes
+
 app.use("/api", userRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api", authRoutes);
@@ -34,13 +34,13 @@ app.use("/api/careerbot", careerRoutes);
 app.use("/api", roadmapRoutes);
 app.use('/api', cvAnalysisRoutes);
 
-// Serve static files for uploaded CVs
+// for uploading cv
 app.use('/uploads', express.static('uploads'));
 
 // app.use("/api/jobs", jobRoutes);
 // app.use("/api/resources", resourceRoutes);
 
-// Root
+
 app.get("/", (req, res) => {
   res.send("CareerVista API is running");
 });
