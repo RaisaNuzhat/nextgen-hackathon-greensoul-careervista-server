@@ -17,10 +17,16 @@ export const addUser = async (user) => {
 
   const newUser = {
     ...user,
-    skill: [],
+    skills: [],
     job_experience:null,
     cv_url:null,
     projects:[],
+    github_link:null,
+    linkedin_link:null,
+    portfolio_link:null,
+    passing_year:null,
+    role:"user",
+    cocurricular_activities:[],
     timestamp: Date.now(),
   };
   console.log("from userModel: ",newUser);
