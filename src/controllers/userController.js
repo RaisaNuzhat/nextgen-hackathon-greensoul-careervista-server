@@ -1,4 +1,4 @@
-import { findUserByEmail, addUser, getAllUsers, updateUser } from "../models/userModel.js";
+import { findUserByEmail, addUser, getAllUsers, updateUser, getAdmin } from "../models/userModel.js";
 import multer from "multer";
 import { PDFExtract } from "pdf.js-extract";
 
@@ -41,6 +41,17 @@ export const getUserByEmailController = async (req, res) => {
   }
 };
 
+export const checkAdmin =async(req,res)=>{
+      const email = req.params.email;
+      console.log(email)
+      if (email != req.decoded.email) {
+        return res.status(403).send({ message: "Forbidden access." });
+      }
+      const query = { email: email };
+      const result = await getAdmin(query);
+      res.send(result);
+    
+}
 export const updateUserData = async (req, res) => {
   try {
     const { email } = req.params;

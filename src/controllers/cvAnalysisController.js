@@ -76,8 +76,8 @@ export async function analyzeCV(req, res) {
 export async function updateUserProfile(req, res) {
   try {
     const { email } = req.params;
-    const { skills, tools, careerTrack } = req.body;
-    console.log(email,skills, tools, careerTrack)
+    const { skills, careerTrack } = req.body;
+    console.log(email,skills, careerTrack)
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -91,7 +91,6 @@ export async function updateUserProfile(req, res) {
       {
         $set: {
           skills: skills || [],
-          tools: tools || [],
           careerTrack: careerTrack || []
         },
       },

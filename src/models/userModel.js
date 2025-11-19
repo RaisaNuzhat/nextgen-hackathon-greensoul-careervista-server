@@ -11,6 +11,15 @@ export const findUserByEmail = async (email) => {
   return await userCollection.findOne({ email });
 };
 
+export const getAdmin=async(query)=>{
+  console.log(query);
+  const userCollection = getUserCollection();
+  const existingUser = await userCollection.findOne(query);
+      let admin = false;
+      if (existingUser) admin = existingUser?.role === "admin";
+      return({ admin });
+}
+
 export const addUser = async (user) => {
   const userCollection = getUserCollection();
   const query = { email: user.email };
