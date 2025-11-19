@@ -307,6 +307,33 @@ export const getAllJobs = async (req, res) => {
   }
 };
 
+export const getAdminAllJobs = async (req, res) => {
+  console.log("from admin view");
+  try {
+    const jobs = await jobCollection().find().toArray();
+
+    if (!jobs || jobs.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No jobs found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: jobs.length,
+      data: jobs,
+    });
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching jobs",
+      error: error.message,
+    });
+  }
+};
+
 export const getSkillGapAnalysis = async (req, res) => {
   try {
     const { userId, jobId } = req.params;
@@ -1090,6 +1117,7 @@ export const getRecommendedJobs = async (req, res) => {
 
 
 export const addJob = async (req, res) => {
+  console.log("from addjob",req.body)
   try {
     const {
       role,
