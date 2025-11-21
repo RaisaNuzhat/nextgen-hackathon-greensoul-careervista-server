@@ -12,7 +12,7 @@ import { verifyToken, verifyAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// All analytics routes require admin authentication
+
 router.get('/summary', verifyToken, verifyAdmin, getAnalyticsSummary);
 router.get('/skills', verifyToken, verifyAdmin, getSkillAnalytics);
 router.get('/career-tracks', verifyToken, verifyAdmin, getCareerTrackAnalytics);
