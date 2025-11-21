@@ -1183,3 +1183,364 @@ export const addJob = async (req, res) => {
     });
   }
 };
+
+export const getAllJobsForAnalytics = async (req, res) => {
+  try {
+    const jobs = await jobCollection().find().toArray();
+    res.status(200).json({
+      success: true,
+      count: jobs.length,
+      data: jobs
+    });
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching jobs",
+      error: error.message
+    });
+  }
+};
+
+// Add these functions to your jobController.js file
+
+export const getUserAnalytics = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { ObjectId } = await import('mongodb');
+    
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid user ID format" 
+      });
+    }
+
+    const user = await userCollection().findOne({ _id: new ObjectId(userId) });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    // Parse user skills
+    let userSkills = [];
+    if (typeof user.skills === 'string') {
+      try {
+        userSkills = JSON.parse(user.skills);
+      } catch (e) {
+        userSkills = user.skills.split(',').map(s => s.trim());
+      }
+    } else if (Array.isArray(user.skills)) {
+      userSkills = user.skills;
+    }
+
+    // Get all jobs for analysis
+    const allJobs = await jobCollection().find({}).toArray();
+
+    // Calculate skill matches across all jobs
+    const skillAnalysis = analyzeUserSkills(userSkills, allJobs);
+    
+    // Calculate job market trends
+    const marketTrends = calculateMarketTrends(allJobs);
+    
+    // Calculate recommended career paths
+    const careerPaths = recommendCareerPaths(user, allJobs, userSkills);
+    
+    // Activity stats (you can enhance this based on your application tracking data)
+    const activityStats = {
+      jobsViewed: 0, // Implement based on your tracking
+      applicationsSubmitted: 0, // Implement based on your tracking
+      profileViews: 0, // Implement based on your tracking
+      lastActive: new Date()
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userProfile: {
+          id: user._id,
+          name: user.fullName,
+          email: user.email,
+          careerTrack: user.careerTrack,
+          experience: user.experience,
+          skills: userSkills,
+          skillCount: userSkills.length
+        },
+        skillAnalysis,
+        marketTrends,
+        careerPaths,
+        activityStats
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching user analytics:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch user analytics", 
+      error: error.message 
+    });
+  }
+};
+
+function analyzeUserSkills(userSkills, allJobs) {
+  const normalizedUserSkills = userSkills.map(s => s.toLowerCase());
+  
+  // Count demand for each user skill
+  const skillDemand = {};
+  userSkills.forEach(skill => {
+    const skillLower = skill.toLowerCase();
+    let demandCount = 0;
+    
+    allJobs.forEach(job => {
+      const jobSkills = Array.isArray(job.skills) 
+        ? job.skills.map(s => s.toLowerCase()) 
+        : [];
+      if (jobSkills.includes(skillLower)) {
+        demandCount++;
+      }
+    });
+    
+    skillDemand[skill] = {
+      count: demandCount,
+      percentage: Math.round((demandCount / allJobs.length) * 100)
+    };
+  });
+
+  // Calculate overall match rate
+  let totalMatches = 0;
+  allJobs.forEach(job => {
+    const jobSkills = Array.isArray(job.skills) 
+      ? job.skills.map(s => s.toLowerCase()) 
+      : [];
+    const matches = normalizedUserSkills.filter(skill => 
+      jobSkills.includes(skill)
+    ).length;
+    if (matches > 0) totalMatches++;
+  });
+
+  const matchRate = Math.round((totalMatches / allJobs.length) * 100);
+
+  return {
+    skillDemand: Object.entries(skillDemand)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 10),
+    overallMatchRate: matchRate,
+    totalJobsMatching: totalMatches
+  };
+}
+
+function calculateMarketTrends(allJobs) {
+  // Job type distribution
+  const jobTypeDistribution = {};
+  allJobs.forEach(job => {
+    const type = job.jobType || 'Unknown';
+    jobTypeDistribution[type] = (jobTypeDistribution[type] || 0) + 1;
+  });
+
+  // Experience level distribution
+  const experienceLevelDistribution = {};
+  allJobs.forEach(job => {
+    const level = job.experienceLevel || 'Unknown';
+    experienceLevelDistribution[level] = (experienceLevelDistribution[level] || 0) + 1;
+  });
+
+  // Location distribution
+  const locationDistribution = {};
+  allJobs.forEach(job => {
+    const location = job.location || 'Unknown';
+    locationDistribution[location] = (locationDistribution[location] || 0) + 1;
+  });
+
+  // Top skills in demand
+  const skillFrequency = {};
+  allJobs.forEach(job => {
+    const skills = Array.isArray(job.skills) ? job.skills : [];
+    skills.forEach(skill => {
+      skillFrequency[skill] = (skillFrequency[skill] || 0) + 1;
+    });
+  });
+
+  const topSkills = Object.entries(skillFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([skill, count]) => ({
+      skill,
+      count,
+      percentage: Math.round((count / allJobs.length) * 100)
+    }));
+
+  // Work mode distribution
+  const workModeDistribution = {};
+  allJobs.forEach(job => {
+    const mode = job.mode || 'Unknown';
+    workModeDistribution[mode] = (workModeDistribution[mode] || 0) + 1;
+  });
+
+  return {
+    totalJobs: allJobs.length,
+    jobTypeDistribution: Object.entries(jobTypeDistribution).map(([type, count]) => ({
+      type,
+      count,
+      percentage: Math.round((count / allJobs.length) * 100)
+    })),
+    experienceLevelDistribution: Object.entries(experienceLevelDistribution).map(([level, count]) => ({
+      level,
+      count,
+      percentage: Math.round((count / allJobs.length) * 100)
+    })),
+    locationDistribution: Object.entries(locationDistribution)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([location, count]) => ({
+        location,
+        count,
+        percentage: Math.round((count / allJobs.length) * 100)
+      })),
+    topSkills,
+    workModeDistribution: Object.entries(workModeDistribution).map(([mode, count]) => ({
+      mode,
+      count,
+      percentage: Math.round((count / allJobs.length) * 100)
+    }))
+  };
+}
+
+function recommendCareerPaths(user, allJobs, userSkills) {
+  const paths = [
+    {
+      title: 'Software Engineering',
+      keywords: ['software', 'developer', 'engineering', 'backend', 'frontend', 'fullstack']
+    },
+    {
+      title: 'Web Development',
+      keywords: ['web', 'react', 'javascript', 'html', 'css', 'frontend']
+    },
+    {
+      title: 'Mobile Development',
+      keywords: ['mobile', 'android', 'ios', 'react native', 'flutter']
+    },
+    {
+      title: 'Data Science',
+      keywords: ['data', 'analytics', 'python', 'machine learning', 'ai']
+    },
+    {
+      title: 'UI/UX Design',
+      keywords: ['design', 'ui', 'ux', 'figma', 'adobe']
+    },
+    {
+      title: 'DevOps',
+      keywords: ['devops', 'aws', 'docker', 'kubernetes', 'ci/cd']
+    }
+  ];
+
+  const normalizedUserSkills = userSkills.map(s => s.toLowerCase());
+  
+  const pathScores = paths.map(path => {
+    let relevantJobs = 0;
+    let skillMatches = 0;
+    
+    allJobs.forEach(job => {
+      const jobTitle = (job.title || '').toLowerCase();
+      const jobDetails = (job.details || '').toLowerCase();
+      const jobSkills = Array.isArray(job.skills) 
+        ? job.skills.map(s => s.toLowerCase()) 
+        : [];
+      
+      const isRelevant = path.keywords.some(keyword => 
+        jobTitle.includes(keyword) || jobDetails.includes(keyword)
+      );
+      
+      if (isRelevant) {
+        relevantJobs++;
+        
+        const matches = normalizedUserSkills.filter(skill => 
+          jobSkills.includes(skill)
+        ).length;
+        skillMatches += matches;
+      }
+    });
+    
+    const matchScore = skillMatches > 0 ? Math.round((skillMatches / (relevantJobs || 1)) * 100) : 0;
+    
+    return {
+      path: path.title,
+      relevantJobs,
+      matchScore,
+      recommendation: matchScore >= 60 ? 'Excellent Fit' : 
+                      matchScore >= 40 ? 'Good Fit' : 
+                      matchScore >= 20 ? 'Consider Upskilling' : 
+                      'Requires Significant Training'
+    };
+  });
+
+  return pathScores
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 4);
+}
+
+export const getMarketInsights = async (req, res) => {
+  try {
+    const allJobs = await jobCollection().find({}).toArray();
+    
+    // Time-based analysis (if you have createdAt field)
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
+    
+    const recentJobs = allJobs.filter(job => 
+      job.createdAt && new Date(job.createdAt) >= thirtyDaysAgo
+    );
+
+    // Salary analysis
+    const salaryRanges = {
+      'Negotiable': 0,
+      'Entry Level (< 20k BDT)': 0,
+      'Mid Level (20k-50k BDT)': 0,
+      'Senior Level (> 50k BDT)': 0,
+      'Hourly Rate': 0
+    };
+
+    allJobs.forEach(job => {
+      const salary = (job.salary || '').toLowerCase();
+      if (salary.includes('negotiable')) {
+        salaryRanges['Negotiable']++;
+      } else if (salary.includes('$') || salary.includes('hour')) {
+        salaryRanges['Hourly Rate']++;
+      } else if (salary.includes('bdt')) {
+        const amount = parseInt(salary.replace(/[^0-9]/g, ''));
+        if (amount < 20000) {
+          salaryRanges['Entry Level (< 20k BDT)']++;
+        } else if (amount <= 50000) {
+          salaryRanges['Mid Level (20k-50k BDT)']++;
+        } else {
+          salaryRanges['Senior Level (> 50k BDT)']++;
+        }
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalJobs: allJobs.length,
+        recentJobs: recentJobs.length,
+        salaryDistribution: Object.entries(salaryRanges).map(([range, count]) => ({
+          range,
+          count,
+          percentage: Math.round((count / allJobs.length) * 100)
+        })),
+        trends: calculateMarketTrends(allJobs)
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching market insights:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch market insights", 
+      error: error.message 
+    });
+  }
+};

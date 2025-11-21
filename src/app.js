@@ -13,7 +13,8 @@ import skillsRoutes from "./routes/skillsRoutes.js";
 import { connectDB } from "./config/database.js";
 import { corsMiddleware } from "./middlewares/corsMiddleware.js";
 import  cvAnalysisRoutes from './routes/cvAnalysisRoutes.js';
-
+import analyticsRoutes from './routes/analyticsRoutes.js';
+import userAnalyticsRoutes from './routes/userAnalyticsRoutes.js'
 const app = express();
 
 
@@ -36,10 +37,10 @@ app.use('/api', cvAnalysisRoutes);
 
 // for uploading cv
 app.use('/uploads', express.static('uploads'));
-
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/user-analysis', userAnalyticsRoutes);
 // app.use("/api/jobs", jobRoutes);
 // app.use("/api/resources", resourceRoutes);
-
 
 app.get("/", (req, res) => {
   res.send("CareerVista API is running");
