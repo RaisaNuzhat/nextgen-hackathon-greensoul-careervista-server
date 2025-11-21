@@ -36,9 +36,8 @@ export async function analyzeCV(req, res) {
     try {
       const extracted = await extractSkillsWithLLM(cvText);
       skills = extracted.skills;
-      tools = extracted.tools;
       careerTrack = extracted.careerTrack;
-      console.log('Skills extracted:', skills.length, 'Tools:', tools.length, careerTrack);
+      console.log('Skills extracted:', skills.length, careerTrack);
     } catch (error) {
       console.error('LLM extraction failed:', error);
       return res.status(500).json({
@@ -52,7 +51,6 @@ export async function analyzeCV(req, res) {
       data: {
         cvPath: cvUrl,
         extractedSkills: skills,
-        extractedTools: tools,
         careerTrack:careerTrack,
         fileName: req.file.originalname
       }

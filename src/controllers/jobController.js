@@ -1202,7 +1202,7 @@ export const getAllJobsForAnalytics = async (req, res) => {
   }
 };
 
-// Add these functions to your jobController.js file
+
 
 export const getUserAnalytics = async (req, res) => {
   try {
@@ -1225,7 +1225,7 @@ export const getUserAnalytics = async (req, res) => {
       });
     }
 
-    // Parse user skills
+    
     let userSkills = [];
     if (typeof user.skills === 'string') {
       try {
@@ -1237,23 +1237,23 @@ export const getUserAnalytics = async (req, res) => {
       userSkills = user.skills;
     }
 
-    // Get all jobs for analysis
+   
     const allJobs = await jobCollection().find({}).toArray();
 
-    // Calculate skill matches across all jobs
+    
     const skillAnalysis = analyzeUserSkills(userSkills, allJobs);
     
-    // Calculate job market trends
+   
     const marketTrends = calculateMarketTrends(allJobs);
     
-    // Calculate recommended career paths
+    
     const careerPaths = recommendCareerPaths(user, allJobs, userSkills);
     
-    // Activity stats (you can enhance this based on your application tracking data)
+    
     const activityStats = {
-      jobsViewed: 0, // Implement based on your tracking
-      applicationsSubmitted: 0, // Implement based on your tracking
-      profileViews: 0, // Implement based on your tracking
+      jobsViewed: 0, 
+      applicationsSubmitted: 0, 
+      profileViews: 0, 
       lastActive: new Date()
     };
 
@@ -1289,7 +1289,7 @@ export const getUserAnalytics = async (req, res) => {
 function analyzeUserSkills(userSkills, allJobs) {
   const normalizedUserSkills = userSkills.map(s => s.toLowerCase());
   
-  // Count demand for each user skill
+
   const skillDemand = {};
   userSkills.forEach(skill => {
     const skillLower = skill.toLowerCase();
@@ -1310,7 +1310,7 @@ function analyzeUserSkills(userSkills, allJobs) {
     };
   });
 
-  // Calculate overall match rate
+ 
   let totalMatches = 0;
   allJobs.forEach(job => {
     const jobSkills = Array.isArray(job.skills) 
@@ -1334,28 +1334,28 @@ function analyzeUserSkills(userSkills, allJobs) {
 }
 
 function calculateMarketTrends(allJobs) {
-  // Job type distribution
+ 
   const jobTypeDistribution = {};
   allJobs.forEach(job => {
     const type = job.jobType || 'Unknown';
     jobTypeDistribution[type] = (jobTypeDistribution[type] || 0) + 1;
   });
 
-  // Experience level distribution
+ 
   const experienceLevelDistribution = {};
   allJobs.forEach(job => {
     const level = job.experienceLevel || 'Unknown';
     experienceLevelDistribution[level] = (experienceLevelDistribution[level] || 0) + 1;
   });
 
-  // Location distribution
+ 
   const locationDistribution = {};
   allJobs.forEach(job => {
     const location = job.location || 'Unknown';
     locationDistribution[location] = (locationDistribution[location] || 0) + 1;
   });
 
-  // Top skills in demand
+
   const skillFrequency = {};
   allJobs.forEach(job => {
     const skills = Array.isArray(job.skills) ? job.skills : [];
@@ -1373,7 +1373,7 @@ function calculateMarketTrends(allJobs) {
       percentage: Math.round((count / allJobs.length) * 100)
     }));
 
-  // Work mode distribution
+ 
   const workModeDistribution = {};
   allJobs.forEach(job => {
     const mode = job.mode || 'Unknown';
@@ -1486,7 +1486,7 @@ export const getMarketInsights = async (req, res) => {
   try {
     const allJobs = await jobCollection().find({}).toArray();
     
-    // Time-based analysis (if you have createdAt field)
+   
     const now = new Date();
     const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
     
@@ -1494,7 +1494,7 @@ export const getMarketInsights = async (req, res) => {
       job.createdAt && new Date(job.createdAt) >= thirtyDaysAgo
     );
 
-    // Salary analysis
+   
     const salaryRanges = {
       'Negotiable': 0,
       'Entry Level (< 20k BDT)': 0,

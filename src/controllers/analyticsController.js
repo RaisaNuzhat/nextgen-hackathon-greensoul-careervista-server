@@ -4,7 +4,7 @@ const jobCollection = () => getDB().collection("jobs");
 const userCollection = () => getDB().collection("users");
 const resourceCollection = () => getDB().collection("resources");
 
-// Get complete analytics summary for dashboard
+
 export const getAnalyticsSummary = async (req, res) => {
   try {
     const [users, jobs, resources] = await Promise.all([
@@ -13,18 +13,17 @@ export const getAnalyticsSummary = async (req, res) => {
       resourceCollection().find({}).toArray()
     ]);
 
-    // Process skill categories
     const skillCategories = {};
     const skillFrequency = {};
     const careerTracks = {};
     const monthlyUsers = {};
 
     users.forEach(user => {
-      // Career tracks
+      
       const track = user.careerTrack || 'Undecided';
       careerTracks[track] = (careerTracks[track] || 0) + 1;
 
-      // Process skills
+     
       let userSkills = [];
       if (Array.isArray(user.skills)) {
         userSkills = user.skills;
@@ -44,7 +43,7 @@ export const getAnalyticsSummary = async (req, res) => {
         }
       });
 
-      // User growth by month
+      
       if (user.timestamp) {
         const date = new Date(user.timestamp);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -52,7 +51,7 @@ export const getAnalyticsSummary = async (req, res) => {
       }
     });
 
-    // Process jobs
+ 
     const jobsByExperience = {};
     const jobsByType = {};
 
@@ -64,7 +63,7 @@ export const getAnalyticsSummary = async (req, res) => {
       jobsByType[type] = (jobsByType[type] || 0) + 1;
     });
 
-    // Process resources
+    
     const resourcesByTrack = {};
     const resourcesByCost = { 'Free': 0, 'Paid': 0 };
 
@@ -78,13 +77,13 @@ export const getAnalyticsSummary = async (req, res) => {
       resourcesByCost[cost] = (resourcesByCost[cost] || 0) + 1;
     });
 
-    // Top 10 skills
+   
     const topSkills = Object.entries(skillFrequency)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([skill, count]) => ({ skill, count }));
 
-    // User growth timeline (last 6 months)
+    
     const sortedMonths = Object.keys(monthlyUsers).sort();
     const last6Months = sortedMonths.slice(-6);
     const userGrowth = last6Months.map(month => ({
@@ -121,7 +120,7 @@ export const getAnalyticsSummary = async (req, res) => {
   }
 };
 
-// Get skill analytics
+
 export const getSkillAnalytics = async (req, res) => {
   try {
     const users = await userCollection().find({}).toArray();
@@ -166,7 +165,7 @@ export const getSkillAnalytics = async (req, res) => {
   }
 };
 
-// Get career track distribution
+
 export const getCareerTrackAnalytics = async (req, res) => {
   try {
     const users = await userCollection().find({}).toArray();
@@ -191,7 +190,6 @@ export const getCareerTrackAnalytics = async (req, res) => {
   }
 };
 
-// Get user growth over time
 export const getUserGrowthAnalytics = async (req, res) => {
   try {
     const users = await userCollection().find({}).toArray();
@@ -226,7 +224,7 @@ export const getUserGrowthAnalytics = async (req, res) => {
   }
 };
 
-// Get job analytics
+
 export const getJobAnalytics = async (req, res) => {
   try {
     const jobs = await jobCollection().find({}).toArray();
@@ -236,15 +234,15 @@ export const getJobAnalytics = async (req, res) => {
     const jobsByLocation = {};
 
     jobs.forEach(job => {
-      // By experience
+      
       const exp = job.experienceLevel || job.experience || 'Not Specified';
       jobsByExperience[exp] = (jobsByExperience[exp] || 0) + 1;
 
-      // By type
+      
       const type = job.jobType || 'Full-time';
       jobsByType[type] = (jobsByType[type] || 0) + 1;
 
-      // By location
+      
       const location = job.location || 'Remote';
       jobsByLocation[location] = (jobsByLocation[location] || 0) + 1;
     });
@@ -268,7 +266,7 @@ export const getJobAnalytics = async (req, res) => {
   }
 };
 
-// Get resource analytics
+
 export const getResourceAnalytics = async (req, res) => {
   try {
     const resources = await resourceCollection().find({}).toArray();
@@ -278,17 +276,17 @@ export const getResourceAnalytics = async (req, res) => {
     const resourcesByPlatform = {};
 
     resources.forEach(resource => {
-      // By skill/track
+      
       const skills = resource.relatedSkills || [];
       skills.forEach(skill => {
         resourcesByTrack[skill] = (resourcesByTrack[skill] || 0) + 1;
       });
 
-      // By cost
+     
       const cost = resource.cost || 'Free';
       resourcesByCost[cost] = (resourcesByCost[cost] || 0) + 1;
 
-      // By platform
+      
       const platform = resource.platform || 'Other';
       resourcesByPlatform[platform] = (resourcesByPlatform[platform] || 0) + 1;
     });
@@ -312,7 +310,7 @@ export const getResourceAnalytics = async (req, res) => {
   }
 };
 
-// Helper function to categorize skills
+
 function categorizeSkill(skill) {
   const skillLower = skill.toLowerCase();
 

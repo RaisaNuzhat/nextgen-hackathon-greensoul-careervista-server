@@ -2,8 +2,7 @@ export default async function extractSkillsWithLLM(cvText) {
   const prompt = `You are an expert career advisor and skill analyzer. Analyze the following CV/Resume text and extract:
 
 1. Key skills (programming languages, frameworks, tools, technologies)
-2. Tools and technologies explicitly mentioned
-3. Suggest career track among these according skills("Web Development",
+2. Suggest career track among these according skills("Web Development",
     "Mobile App Development",
     "Data Science",
     "AI / ML",
@@ -26,7 +25,6 @@ ${cvText}
 Respond ONLY with a valid JSON object in this exact format (no markdown, no extra text):
 {
   "skills": ["skill1", "skill2", "skill3"],
-  "tools": ["tool1", "tool2", "tool3"],
   "careerTrack": ["track1", "track2", "track3"]
 }
 

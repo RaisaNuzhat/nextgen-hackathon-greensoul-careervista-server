@@ -1,6 +1,6 @@
 import { getDB } from '../config/database.js';
 
-// Get Overview Statistics
+
 export async function getOverviewStats(req, res) {
   try {
     const db = getDB();
@@ -29,7 +29,7 @@ export async function getOverviewStats(req, res) {
   }
 }
 
-// Get Job Market Analysis
+
 export async function getJobMarketAnalysis(req, res) {
   try {
     const db = getDB();
@@ -109,7 +109,7 @@ export async function getJobMarketAnalysis(req, res) {
   }
 }
 
-// Get Top Skills Analysis
+
 export async function getTopSkills(req, res) {
   try {
     const db = getDB();
@@ -189,7 +189,7 @@ export async function getTopSkills(req, res) {
   }
 }
 
-// Get Career Track Distribution
+
 export async function getCareerTrackDistribution(req, res) {
   try {
     const db = getDB();
@@ -234,7 +234,7 @@ export async function getCareerTrackDistribution(req, res) {
   }
 }
 
-// Get Skills Gap Analysis
+
 export async function getSkillsGapAnalysis(req, res) {
   try {
     const db = getDB();
@@ -291,7 +291,7 @@ export async function getSkillsGapAnalysis(req, res) {
   }
 }
 
-// Get User Demographics
+
 export async function getUserDemographics(req, res) {
   try {
     const db = getDB();
@@ -331,7 +331,7 @@ export async function getUserDemographics(req, res) {
   }
 }
 
-// Get Complete Analytics Dashboard Data
+
 export async function getCompleteAnalytics(req, res) {
   try {
     console.log('📊 Complete analytics endpoint hit');
@@ -340,7 +340,7 @@ export async function getCompleteAnalytics(req, res) {
     const usersCollection = db.collection('users');
     const jobsCollection = db.collection('jobs');
     
-    // Get counts
+    
     const totalUsers = await usersCollection.countDocuments({});
     const totalJobs = await jobsCollection.countDocuments({});
     
@@ -353,7 +353,7 @@ export async function getCompleteAnalytics(req, res) {
       activeApplications: 342
     };
     
-    // Experience Levels
+   
     const experienceLevels = await jobsCollection.aggregate([
       { $group: { _id: '$experienceLevel', count: { $sum: 1 } } }
     ]).toArray();
@@ -364,7 +364,7 @@ export async function getCompleteAnalytics(req, res) {
       percentage: parseFloat(((e.count / totalJobs) * 100).toFixed(1))
     }));
     
-    // Job Types
+   
     const jobTypes = await jobsCollection.aggregate([
       { $group: { _id: '$jobType', count: { $sum: 1 } } }
     ]).toArray();
@@ -380,7 +380,7 @@ export async function getCompleteAnalytics(req, res) {
       jobTypes: jobTypesFormatted
     };
     
-    // Skills Analysis
+    
     const jobSkills = await jobsCollection.aggregate([
       { $unwind: '$skills' },
       { $group: { _id: '$skills', jobs: { $sum: 1 } } },
@@ -415,7 +415,7 @@ export async function getCompleteAnalytics(req, res) {
       ]
     };
     
-    // Career Tracks
+   
     const tracks = await usersCollection.aggregate([
       { $group: { _id: '$careerTrack', count: { $sum: 1 } } },
       { $sort: { count: -1 } }
@@ -427,7 +427,7 @@ export async function getCompleteAnalytics(req, res) {
       percentage: Math.round((t.count / totalUsers) * 100)
     }));
     
-    console.log('✅ Analytics data prepared successfully');
+    console.log(' Analytics data prepared successfully');
     
     res.status(200).json({
       success: true,
@@ -439,7 +439,7 @@ export async function getCompleteAnalytics(req, res) {
       }
     });
   } catch (error) {
-    console.error('❌ Error in getCompleteAnalytics:', error);
+    console.error(' Error in getCompleteAnalytics:', error);
     res.status(500).json({
       success: false,
       message: 'Error in getCompleteAnalytics',
