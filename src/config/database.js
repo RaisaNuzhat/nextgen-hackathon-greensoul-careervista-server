@@ -14,10 +14,10 @@ export const connectDB = async () => {
     
     console.log("🔄 Connecting to MongoDB...");
     client = new MongoClient(uri);
-    await client.connect();
+    // await client.connect();
     
     // Ping to verify connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     
     db = client.db("careervista");
     console.log(" MongoDB connected successfully to database: careervista");
