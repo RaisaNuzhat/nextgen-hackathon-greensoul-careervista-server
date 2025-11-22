@@ -1,44 +1,64 @@
-import { PDFExtract } from "pdf.js-extract";
-import fs from "fs";
+import mammoth from 'mammoth';
+import path from 'path';
+import { PdfReader } from 'pdfreader';
 
-
-export  async function extractTextFromPDF(filePath) {
+/**
+ * Extract text from PDF buffer using pdfreader
+ * @param {Buffer} buffer - PDF file buffer from multer
+ * @returns {Promise<string>} - Extracted text
+ */
+export async function extractTextFromPDFBuffer(buffer) {
   return new Promise((resolve, reject) => {
-    const pdfExtract = new PDFExtract();
-    const options = {};
+    const pdfReader = new PdfReader();
+    let text = '';
 
-    pdfExtract.extract(filePath, options, (err, data) => {
+    pdfReader.parseBuffer(buffer, (err, item) => {
       if (err) {
         reject(new Error('Failed to extract text from PDF: ' + err.message));
-        return;
-      }
-
-      try {
-        // combine text from all pages
-        const text = data.pages
-          .map((page) => page.content.map((c) => c.str).join(' '))
-          .join('\n\n');
-
+      } else if (!item) {
+        // End of file
         if (!text || text.trim().length < 100) {
           reject(new Error('Could not extract meaningful text from PDF'));
-          return;
+        } else {
+          resolve(text);
         }
-
-        resolve(text);
-      } catch (error) {
-        reject(new Error('Error processing PDF text: ' + error.message));
+      } else if (item.text) {
+        text += item.text + ' ';
       }
     });
   });
 }
 
-export function deleteUploadedFile(filePath) {
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      console.error('Failed to delete file:', err);
-    } else {
-      console.log('Uploaded file deleted successfully:', filePath);
+/**
+ * Extract text from any supported file type
+ * @param {Object} file - Multer file object with buffer
+ * @returns {Promise<string>} - Extracted text
+ */
+export async function extractTextFromBuffer(file) {
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+  
+  try {
+    if (fileExtension === '.pdf') {
+      return await extractTextFromPDFBuffer(file.buffer);
+    } 
+    else if (fileExtension === '.docx') {
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      const text = result.value;
+      
+      if (!text || text.trim().length < 100) {
+        throw new Error('Could not extract meaningful text from DOCX');
+      }
+      
+      return text;
+    } 
+    else if (fileExtension === '.doc') {
+      throw new Error('Legacy .doc format not supported. Please use .docx or .pdf');
+    } 
+    else {
+      throw new Error('Unsupported file format. Please upload PDF or DOCX');
     }
-  });
+  } catch (error) {
+    console.error('Text extraction error:', error);
+    throw error;
+  }
 }
-

@@ -1,6 +1,6 @@
-import { extractTextFromPDF, deleteUploadedFile } from '../utils/pdfExtractor.js';
-import  extractSkillsWithLLM  from '../utils/llmservice.js';
-import  matchCareerTracks  from '../utils/careerMatcher.js';
+import { extractTextFromBuffer } from '../utils/pdfExtractor.js';
+import extractSkillsWithLLM from '../utils/llmservice.js';
+import matchCareerTracks from '../utils/careerMatcher.js';
 import { getDB } from "../config/database.js";
 
 export const getUserCollection = () => {
@@ -14,30 +14,28 @@ export async function analyzeCV(req, res) {
       return res.status(400).json({ error: 'No CV file uploaded' });
     }
 
-    const filePath = req.file.path;
-    const cvUrl = `/uploads/cvs/${req.file.filename}`;
+    console.log('Processing CV:', req.file.originalname);
 
-    console.log('Processing CV:', req.file.filename);
-
-    
+    // Extract text from uploaded file (in memory)
     let cvText;
     try {
-      cvText = await extractTextFromPDF(filePath);
+      cvText = await extractTextFromBuffer(req.file);
       console.log('Text extracted, length:', cvText.length);
     } catch (error) {
-      deleteUploadedFile(filePath);
+      console.error('Text extraction failed:', error);
       return res.status(400).json({ 
-        error: 'Could not extract text from PDF',
+        error: 'Could not extract text from file',
         message: error.message 
       });
     }
 
-    let skills, tools,careerTrack;
+    // Extract skills and career track using LLM
+    let skills, careerTrack;
     try {
       const extracted = await extractSkillsWithLLM(cvText);
       skills = extracted.skills;
       careerTrack = extracted.careerTrack;
-      console.log('Skills extracted:', skills.length, careerTrack);
+      console.log('Skills extracted:', skills.length, 'Career Track:', careerTrack);
     } catch (error) {
       console.error('LLM extraction failed:', error);
       return res.status(500).json({
@@ -49,20 +47,16 @@ export async function analyzeCV(req, res) {
     res.json({
       success: true,
       data: {
-        cvPath: cvUrl,
         extractedSkills: skills,
-        careerTrack:careerTrack,
-        fileName: req.file.originalname
+        careerTrack: careerTrack,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        textLength: cvText.length
       }
     });
 
   } catch (error) {
     console.error('CV analysis error:', error);
-    
-    if (req.file) {
-      deleteUploadedFile(req.file.path);
-    }
-
     res.status(500).json({ 
       error: 'Failed to analyze CV',
       message: error.message 
